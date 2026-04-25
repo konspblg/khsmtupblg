@@ -21,41 +21,25 @@
     --shadow: 0 1px 3px rgba(0,0,0,0.4);
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  /* Hilangkan overflow horizontal global */
-  html, body {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
-  }
+  html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: var(--bg); color: var(--text);
     min-height: 100vh; transition: background 0.3s, color 0.3s; line-height: 1.5;
   }
-
   header {
     background: var(--surface); border-bottom: 1px solid var(--border);
     padding: 1rem; box-shadow: var(--shadow);
-    position: sticky; top: 0; z-index: 100;
-    width: 100%;
+    position: sticky; top: 0; z-index: 100; width: 100%;
   }
   .header-inner {
-    width: 100%;
-    max-width: 1400px; margin: 0 auto;
+    width: 100%; max-width: 1400px; margin: 0 auto;
     display: flex; justify-content: space-between; align-items: center;
     gap: 0.75rem; flex-wrap: wrap;
   }
   .title { display: flex; align-items: center; gap: 0.6rem; min-width: 0; flex: 1; }
-  .title h1 {
-    font-size: clamp(0.95rem, 3.5vw, 1.25rem);
-    font-weight: 600;
-    line-height: 1.25;
-  }
-  .title .subtitle {
-    font-size: clamp(0.7rem, 2vw, 0.8rem);
-    color: var(--text-muted);
-  }
+  .title h1 { font-size: clamp(0.95rem, 3.5vw, 1.25rem); font-weight: 600; line-height: 1.25; }
+  .title .subtitle { font-size: clamp(0.7rem, 2vw, 0.8rem); color: var(--text-muted); }
   .logo {
     width: 36px; height: 36px; flex-shrink: 0;
     background: var(--primary); border-radius: 8px;
@@ -67,26 +51,18 @@
     padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 8px;
     background: var(--surface); color: var(--text); cursor: pointer;
     font-size: 0.85rem; transition: all 0.2s;
-    display: inline-flex; align-items: center; gap: 0.35rem;
-    white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap;
   }
   .btn:hover { background: var(--surface-2); border-color: var(--primary); }
   .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  main {
-    width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 1rem;
-  }
+  main { width: 100%; max-width: 1400px; margin: 0 auto; padding: 1rem; }
 
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
-    gap: 0.75rem;
-    margin-bottom: 1.25rem;
-    width: 100%;
+    gap: 0.75rem; margin-bottom: 1.25rem; width: 100%;
   }
   .stat-card {
     background: var(--surface); border: 1px solid var(--border);
@@ -98,11 +74,7 @@
     text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;
     word-break: break-word;
   }
-  .stat-card .value {
-    font-size: clamp(1.4rem, 4vw, 1.75rem);
-    font-weight: 700;
-    word-break: break-word;
-  }
+  .stat-card .value { font-size: clamp(1.4rem, 4vw, 1.75rem); font-weight: 700; word-break: break-word; }
   .stat-card.primary { border-left: 4px solid var(--primary); }
   .stat-card.success { border-left: 4px solid var(--success); }
   .stat-card.warning { border-left: 4px solid var(--warning); }
@@ -113,8 +85,7 @@
     box-shadow: var(--shadow);
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
-    gap: 0.75rem;
-    width: 100%;
+    gap: 0.75rem; width: 100%;
   }
   .filter-group { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
   .filter-group label {
@@ -122,8 +93,7 @@
     text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;
   }
   .filter-group select {
-    width: 100%;
-    padding: 0.55rem 0.75rem; border: 1px solid var(--border);
+    width: 100%; padding: 0.55rem 0.75rem; border: 1px solid var(--border);
     border-radius: 8px; background: var(--surface); color: var(--text);
     font-size: 0.9rem;
   }
@@ -134,24 +104,18 @@
   .charts-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
-    gap: 1rem;
-    margin-bottom: 1.25rem;
-    width: 100%;
+    gap: 1rem; margin-bottom: 1.25rem; width: 100%;
   }
   .chart-card {
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 1rem; box-shadow: var(--shadow);
-    min-width: 0;
+    border-radius: 12px; padding: 1rem; box-shadow: var(--shadow); min-width: 0;
   }
-  .chart-card h3 {
-    font-size: 0.95rem; margin-bottom: 0.75rem; font-weight: 600;
-  }
+  .chart-card h3 { font-size: 0.95rem; margin-bottom: 0.75rem; font-weight: 600; }
   .chart-wrapper { position: relative; height: 280px; width: 100%; }
 
   .table-card {
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; box-shadow: var(--shadow);
-    overflow: hidden; width: 100%;
+    border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; width: 100%;
   }
   .table-header {
     padding: 0.85rem 1rem; border-bottom: 1px solid var(--border);
@@ -160,12 +124,8 @@
   }
   .table-header h3 { font-size: 0.95rem; font-weight: 600; }
   .table-info { font-size: 0.8rem; color: var(--text-muted); }
-
-  /* Tabel detail BOLEH di-scroll horizontal (sengaja) */
   .table-scroll {
-    overflow-x: auto;
-    overflow-y: auto;
-    max-height: 600px;
+    overflow-x: auto; overflow-y: auto; max-height: 600px;
     -webkit-overflow-scrolling: touch;
   }
   table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
@@ -179,10 +139,7 @@
   th:hover { background: var(--border); }
   th .sort-icon { opacity: 0.4; margin-left: 0.25rem; font-size: 0.7rem; }
   th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--primary); }
-  td {
-    padding: 0.7rem 0.9rem; border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-  }
+  td { padding: 0.7rem 0.9rem; border-bottom: 1px solid var(--border); white-space: nowrap; }
   tbody tr { transition: background 0.15s; }
   tbody tr:hover { background: var(--surface-2); }
   tbody tr.highlight-danger { background: rgba(220, 38, 38, 0.08); }
@@ -212,7 +169,6 @@
 
   .hidden { display: none !important; }
 
-  /* Responsive tweaks untuk layar HP */
   @media (max-width: 480px) {
     main { padding: 0.75rem; }
     header { padding: 0.75rem; }
@@ -258,6 +214,7 @@
   <div id="dashboard" class="hidden">
     <div class="stats-grid" id="statsGrid"></div>
 
+    <!-- Cascading filter: ULTG > GI > Penyedia Jasa Pasang > Material > Pabrikan -->
     <div class="filters">
       <div class="filter-group">
         <label for="filterULTG">ULTG</label>
@@ -268,12 +225,16 @@
         <select id="filterGI"><option value="">Semua GI</option></select>
       </div>
       <div class="filter-group">
-        <label for="filterPenyedia">Penyedia</label>
+        <label for="filterPenyedia">Penyedia Jasa Pasang</label>
         <select id="filterPenyedia"><option value="">Semua Penyedia</option></select>
       </div>
       <div class="filter-group">
         <label for="filterMaterial">Material</label>
         <select id="filterMaterial"><option value="">Semua Material</option></select>
+      </div>
+      <div class="filter-group">
+        <label for="filterPabrikan">Pabrikan</label>
+        <select id="filterPabrikan"><option value="">Semua Pabrikan</option></select>
       </div>
       <div class="filter-reset">
         <button class="btn" id="resetFilters">↺ Reset Filter</button>
@@ -322,7 +283,9 @@ const ROWS_PER_PAGE = 25;
 let allData = [], filteredData = [], columns = [];
 let currentPage = 1, sortColumn = null, sortDirection = 'asc';
 let barChart = null, pieChart = null;
-let colULTG, colGI, colPenyedia, colMaterial;
+
+// Nama kolom untuk filter & stat
+let colULTG, colGI, colPenyedia, colMaterial, colPabrikan;
 let colJumlah, colTerpasang, colBelum, colStatus;
 
 async function loadData() {
@@ -338,8 +301,19 @@ async function loadData() {
     const jsonEnd = text.lastIndexOf('}') + 1;
     const json = JSON.parse(text.substring(jsonStart, jsonEnd));
     if (!json.table) throw new Error('Format data tidak sesuai');
+
     parseSheetData(json.table);
     detectImportantColumns();
+
+    // Exclude SF6 — bukan MTU
+    if (colMaterial) {
+      allData = allData.filter(r => {
+        const m = String(r[colMaterial] || '').toUpperCase();
+        return !m.includes('SF6');
+      });
+      filteredData = [...allData];
+    }
+
     initDashboard();
     document.getElementById('loading').classList.add('hidden');
     document.getElementById('dashboard').classList.remove('hidden');
@@ -378,11 +352,16 @@ function findColumn(keywords) {
   return null;
 }
 
+/* Mapping kolom berdasarkan posisi (zero-indexed):
+   B = index 1 → Pabrikan (sebelumnya "Penyedia Material")
+   H = index 7 → Material
+   Sisanya tetap auto-detect by name. */
 function detectImportantColumns() {
   colULTG = findColumn(['ultg']);
   colGI = findColumn(['gardu induk', 'gi']);
-  colPenyedia = findColumn(['penyedia pasang', 'penyedia']);
-  colMaterial = findColumn(['material']);
+  colPenyedia = findColumn(['penyedia pasang', 'penyedia jasa']);
+  colMaterial = columns[7] || null;   // kolom H
+  colPabrikan = columns[1] || null;   // kolom B
   colJumlah = findColumn(['jumlah mtu', 'jumlah']);
   colTerpasang = findColumn(['terpasang', 'sudah']);
   colBelum = findColumn(['belum terpasang', 'belum', 'sisa']);
@@ -414,14 +393,22 @@ function populateSelect(selectId, values, defaultLabel, currentValue) {
   sel.value = (currentValue && values.includes(currentValue)) ? currentValue : '';
 }
 
+/* Cascading scope:
+   level 0 → ULTG: dari semua data
+   level 1 → GI: filter by ULTG
+   level 2 → Penyedia: filter by ULTG + GI
+   level 3 → Material: filter by ULTG + GI + Penyedia
+   level 4 → Pabrikan: filter by ULTG + GI + Penyedia + Material */
 function getScopeForLevel(level) {
   let scope = allData;
   const ultgVal = document.getElementById('filterULTG').value;
   const giVal = document.getElementById('filterGI').value;
   const penyediaVal = document.getElementById('filterPenyedia').value;
+  const materialVal = document.getElementById('filterMaterial').value;
   if (level >= 1 && ultgVal && colULTG) scope = scope.filter(r => r[colULTG] === ultgVal);
   if (level >= 2 && giVal && colGI) scope = scope.filter(r => r[colGI] === giVal);
   if (level >= 3 && penyediaVal && colPenyedia) scope = scope.filter(r => r[colPenyedia] === penyediaVal);
+  if (level >= 4 && materialVal && colMaterial) scope = scope.filter(r => r[colMaterial] === materialVal);
   return scope;
 }
 
@@ -445,8 +432,13 @@ function populateMaterial() {
   populateSelect('filterMaterial', getUniqueValues(getScopeForLevel(3), colMaterial), 'Semua Material', sel.value);
   sel.disabled = !colMaterial;
 }
+function populatePabrikan() {
+  const sel = document.getElementById('filterPabrikan');
+  populateSelect('filterPabrikan', getUniqueValues(getScopeForLevel(4), colPabrikan), 'Semua Pabrikan', sel.value);
+  sel.disabled = !colPabrikan;
+}
 function populateAllFilters() {
-  populateULTG(); populateGI(); populatePenyedia(); populateMaterial();
+  populateULTG(); populateGI(); populatePenyedia(); populateMaterial(); populatePabrikan();
 }
 
 function renderStats() {
@@ -599,12 +591,14 @@ function applyFilters() {
   const giVal = document.getElementById('filterGI').value;
   const penyediaVal = document.getElementById('filterPenyedia').value;
   const materialVal = document.getElementById('filterMaterial').value;
+  const pabrikanVal = document.getElementById('filterPabrikan').value;
 
   filteredData = allData.filter(row => {
     if (ultgVal && colULTG && row[colULTG] !== ultgVal) return false;
     if (giVal && colGI && row[colGI] !== giVal) return false;
     if (penyediaVal && colPenyedia && row[colPenyedia] !== penyediaVal) return false;
     if (materialVal && colMaterial && row[colMaterial] !== materialVal) return false;
+    if (pabrikanVal && colPabrikan && row[colPabrikan] !== pabrikanVal) return false;
     return true;
   });
 
@@ -619,24 +613,33 @@ function attachListeners() {
     document.getElementById('filterGI').value = '';
     document.getElementById('filterPenyedia').value = '';
     document.getElementById('filterMaterial').value = '';
-    populateGI(); populatePenyedia(); populateMaterial();
+    document.getElementById('filterPabrikan').value = '';
+    populateGI(); populatePenyedia(); populateMaterial(); populatePabrikan();
     applyFilters();
   });
   document.getElementById('filterGI').addEventListener('change', () => {
     document.getElementById('filterPenyedia').value = '';
     document.getElementById('filterMaterial').value = '';
-    populatePenyedia(); populateMaterial();
+    document.getElementById('filterPabrikan').value = '';
+    populatePenyedia(); populateMaterial(); populatePabrikan();
     applyFilters();
   });
   document.getElementById('filterPenyedia').addEventListener('change', () => {
     document.getElementById('filterMaterial').value = '';
-    populateMaterial();
+    document.getElementById('filterPabrikan').value = '';
+    populateMaterial(); populatePabrikan();
     applyFilters();
   });
-  document.getElementById('filterMaterial').addEventListener('change', applyFilters);
+  document.getElementById('filterMaterial').addEventListener('change', () => {
+    document.getElementById('filterPabrikan').value = '';
+    populatePabrikan();
+    applyFilters();
+  });
+  document.getElementById('filterPabrikan').addEventListener('change', applyFilters);
 
   document.getElementById('resetFilters').addEventListener('click', () => {
-    ['filterULTG','filterGI','filterPenyedia','filterMaterial'].forEach(id => document.getElementById(id).value = '');
+    ['filterULTG','filterGI','filterPenyedia','filterMaterial','filterPabrikan']
+      .forEach(id => document.getElementById(id).value = '');
     populateAllFilters();
     applyFilters();
   });
