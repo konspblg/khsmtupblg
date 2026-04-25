@@ -840,37 +840,24 @@ function attachListeners() {
 }
 
 /* ===========================================================
-   Axis-locked smooth scroll untuk container tabel.
+   Axis-locked direct scroll untuk container tabel.
    - Lock 1 sumbu setelah threshold kecil (5px) → respons cepat
-   - Inertia/momentum scroll setelah jari diangkat → smooth
+   - Direct mapping 1:1 jari ke scroll — TANPA momentum/inertia
+     supaya tidak overshoot & tetap akurat di HP
    =========================================================== */
 function setupAxisLockedScroll() {
   const el = document.getElementById('tableScroll');
   if (!el) return;
 
   let touchStartX = 0, touchStartY = 0;
-  let lastX = 0, lastY = 0;
-  let lastTime = 0;
-  let velocityX = 0, velocityY = 0;
   let lockedAxis = null;
   let startScrollLeft = 0, startScrollTop = 0;
-  let momentumRAF = null;
-
-  function cancelMomentum() {
-    if (momentumRAF) {
-      cancelAnimationFrame(momentumRAF);
-      momentumRAF = null;
-    }
-  }
 
   el.addEventListener('touchstart', (e) => {
     if (e.touches.length !== 1) return;
-    cancelMomentum();
     const t = e.touches[0];
-    touchStartX = lastX = t.clientX;
-    touchStartY = lastY = t.clientY;
-    lastTime = performance.now();
-    velocityX = velocityY = 0;
+    touchStartX = t.clientX;
+    touchStartY = t.clientY;
     startScrollLeft = el.scrollLeft;
     startScrollTop = el.scrollTop;
     lockedAxis = null;
@@ -882,7 +869,6 @@ function setupAxisLockedScroll() {
     const dx = t.clientX - touchStartX;
     const dy = t.clientY - touchStartY;
 
-    // Tentukan sumbu lock dengan threshold kecil supaya respons cepat
     if (lockedAxis === null) {
       if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
         lockedAxis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
@@ -891,16 +877,7 @@ function setupAxisLockedScroll() {
       }
     }
 
-    // Hitung velocity untuk momentum
-    const now = performance.now();
-    const dt = Math.max(now - lastTime, 1);
-    velocityX = (t.clientX - lastX) / dt; // px per ms
-    velocityY = (t.clientY - lastY) / dt;
-    lastX = t.clientX;
-    lastY = t.clientY;
-    lastTime = now;
-
-    // Geser scroll sesuai sumbu yang dilock
+    // Direct 1:1 mapping — geser tabel sejauh jari bergerak, tidak lebih
     if (lockedAxis === 'x') {
       el.scrollLeft = startScrollLeft - dx;
       el.scrollTop = startScrollTop;
@@ -912,30 +889,8 @@ function setupAxisLockedScroll() {
     }
   }, { passive: false });
 
-  el.addEventListener('touchend', () => {
-    // Inertia scroll setelah jari diangkat
-    if (lockedAxis && (Math.abs(velocityX) > 0.1 || Math.abs(velocityY) > 0.1)) {
-      let vx = -velocityX * 18; // konversi ke px per frame, multiplier untuk feel responsif
-      let vy = -velocityY * 18;
-      const friction = 0.92; // makin dekat 1 = momentum makin panjang
-
-      function step() {
-        if (lockedAxis === 'x') {
-          if (Math.abs(vx) < 0.5) { momentumRAF = null; return; }
-          el.scrollLeft += vx;
-          vx *= friction;
-        } else {
-          if (Math.abs(vy) < 0.5) { momentumRAF = null; return; }
-          el.scrollTop += vy;
-          vy *= friction;
-        }
-        momentumRAF = requestAnimationFrame(step);
-      }
-      momentumRAF = requestAnimationFrame(step);
-    }
-    lockedAxis = null;
-  });
-  el.addEventListener('touchcancel', () => { lockedAxis = null; cancelMomentum(); });
+  el.addEventListener('touchend', () => { lockedAxis = null; });
+  el.addEventListener('touchcancel', () => { lockedAxis = null; });
 }
 
 /* Scroll-to-top button — muncul setelah scroll > 300px */
