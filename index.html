@@ -12,6 +12,10 @@
     --primary: #2563eb; --primary-hover: #1d4ed8;
     --success: #16a34a; --warning: #f59e0b; --danger: #dc2626;
     --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    /* Highlight saat row di-klik (light theme) */
+    --row-selected-bg: #fef3c7;     /* kuning lembut */
+    --row-selected-text: #1a1f36;
+    --row-selected-border: #f59e0b;
   }
   [data-theme="dark"] {
     --bg: #0f172a; --surface: #1e293b; --surface-2: #283548;
@@ -19,6 +23,10 @@
     --primary: #3b82f6; --primary-hover: #60a5fa;
     --success: #22c55e; --warning: #fbbf24; --danger: #ef4444;
     --shadow: 0 1px 3px rgba(0,0,0,0.4);
+    /* Highlight saat row di-klik (dark theme) */
+    --row-selected-bg: #3b3416;     /* coklat tua hangat */
+    --row-selected-text: #fde68a;
+    --row-selected-border: #fbbf24;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
@@ -27,6 +35,8 @@
     background: var(--bg); color: var(--text);
     min-height: 100vh; transition: background 0.3s, color 0.3s; line-height: 1.5;
   }
+
+  /* ===== HEADER: title baris atas, tombol baris bawah ===== */
   header {
     background: var(--surface); border-bottom: 1px solid var(--border);
     padding: 1rem; box-shadow: var(--shadow);
@@ -34,21 +44,27 @@
   }
   .header-inner {
     width: 100%; max-width: 1400px; margin: 0 auto;
-    display: flex; justify-content: space-between; align-items: center;
-    gap: 0.75rem; flex-wrap: wrap;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
   }
-  .title { display: flex; align-items: center; gap: 0.6rem; min-width: 0; flex: 1; }
-  .title h1 { font-size: clamp(0.95rem, 3.5vw, 1.25rem); font-weight: 600; line-height: 1.25; }
+  .title { display: flex; align-items: center; gap: 0.6rem; min-width: 0; width: 100%; }
+  .title h1 { font-size: clamp(1rem, 3.5vw, 1.25rem); font-weight: 600; line-height: 1.25; }
   .title .subtitle { font-size: clamp(0.7rem, 2vw, 0.8rem); color: var(--text-muted); }
   .logo {
-    width: 36px; height: 36px; flex-shrink: 0;
+    width: 40px; height: 40px; flex-shrink: 0;
     background: var(--primary); border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
-    color: white; font-weight: 700;
+    color: white; font-weight: 700; font-size: 1.1rem;
   }
-  .header-actions { display: flex; gap: 0.4rem; align-items: center; flex-shrink: 0; }
+  .header-actions {
+    display: flex; gap: 0.5rem; align-items: center;
+    justify-content: flex-end;
+    width: 100%;
+    flex-wrap: wrap;
+  }
   .btn {
-    padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 8px;
+    padding: 0.5rem 0.85rem; border: 1px solid var(--border); border-radius: 8px;
     background: var(--surface); color: var(--text); cursor: pointer;
     font-size: 0.85rem; transition: all 0.2s;
     display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap;
@@ -124,9 +140,18 @@
   }
   .table-header h3 { font-size: 0.95rem; font-weight: 600; }
   .table-info { font-size: 0.8rem; color: var(--text-muted); }
+
+  /* ===== TABLE SCROLL: kunci ke 1 sumbu pada satu waktu =====
+     Trick: pakai touch-action manipulation + scroll-snap yang lembut.
+     Cara paling efektif: cegah scroll diagonal via JS event handling.
+     CSS hanya menyiapkan container-nya. */
   .table-scroll {
-    overflow-x: auto; overflow-y: auto; max-height: 600px;
+    overflow-x: auto; overflow-y: auto;
+    max-height: 600px;
     -webkit-overflow-scrolling: touch;
+    /* touch-action pan-x pan-y artinya browser mengizinkan kedua arah,
+       tapi JS akan mengunci salah satu saat user mulai gestur */
+    touch-action: pan-x pan-y;
   }
   table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
   thead { background: var(--surface-2); }
@@ -140,10 +165,21 @@
   th .sort-icon { opacity: 0.4; margin-left: 0.25rem; font-size: 0.7rem; }
   th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--primary); }
   td { padding: 0.7rem 0.9rem; border-bottom: 1px solid var(--border); white-space: nowrap; }
-  tbody tr { transition: background 0.15s; }
+  tbody tr { transition: background 0.15s; cursor: pointer; }
   tbody tr:hover { background: var(--surface-2); }
   tbody tr.highlight-danger { background: rgba(220, 38, 38, 0.08); }
   tbody tr.highlight-warning { background: rgba(245, 158, 11, 0.08); }
+
+  /* Highlight saat row di-klik — paling kuat, override hover dan warning */
+  tbody tr.row-selected,
+  tbody tr.row-selected:hover,
+  tbody tr.row-selected.highlight-warning,
+  tbody tr.row-selected.highlight-danger {
+    background: var(--row-selected-bg) !important;
+    color: var(--row-selected-text);
+    box-shadow: inset 4px 0 0 var(--row-selected-border);
+    font-weight: 500;
+  }
 
   .loading, .error {
     background: var(--surface); border: 1px solid var(--border);
@@ -173,7 +209,7 @@
     main { padding: 0.75rem; }
     header { padding: 0.75rem; }
     .title h1 { font-size: 1rem; }
-    .logo { width: 32px; height: 32px; font-size: 0.9rem; }
+    .logo { width: 36px; height: 36px; font-size: 1rem; }
     .btn { padding: 0.45rem 0.65rem; font-size: 0.8rem; }
     .stat-card { padding: 0.85rem 1rem; }
     .filters, .chart-card { padding: 0.85rem; }
@@ -185,6 +221,7 @@
 
 <header>
   <div class="header-inner">
+    <!-- Baris 1: title -->
     <div class="title">
       <div class="logo">⚡</div>
       <div style="min-width:0;">
@@ -192,6 +229,7 @@
         <div class="subtitle">Realtime data dari Google Sheets</div>
       </div>
     </div>
+    <!-- Baris 2: tombol -->
     <div class="header-actions">
       <button class="btn" id="refreshBtn">🔄 Refresh</button>
       <button class="btn" id="themeToggle">🌙 Dark</button>
@@ -214,7 +252,6 @@
   <div id="dashboard" class="hidden">
     <div class="stats-grid" id="statsGrid"></div>
 
-    <!-- Cascading filter: ULTG > GI > Penyedia Jasa Pasang > Material > Pabrikan -->
     <div class="filters">
       <div class="filter-group">
         <label for="filterULTG">ULTG</label>
@@ -257,7 +294,7 @@
         <h3>📋 Data Detail</h3>
         <div class="table-info" id="tableInfo">Menampilkan 0 data</div>
       </div>
-      <div class="table-scroll">
+      <div class="table-scroll" id="tableScroll">
         <table id="dataTable">
           <thead><tr id="tableHeaderRow"></tr></thead>
           <tbody id="tableBody"></tbody>
@@ -281,12 +318,14 @@ const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tq
 const ROWS_PER_PAGE = 25;
 
 let allData = [], filteredData = [], columns = [];
+// displayColumns: urutan kolom yang ditampilkan di tabel
+// (tidak termasuk kolom yang di-hide seperti UPT, dan sudah di-reorder Pabrikan setelah Bay)
+let displayColumns = [];
 let currentPage = 1, sortColumn = null, sortDirection = 'asc';
 let barChart = null, pieChart = null;
 
-// Nama kolom untuk filter & stat
 let colULTG, colGI, colPenyedia, colMaterial, colPabrikan;
-let colJumlah, colTerpasang, colBelum, colStatus;
+let colJumlah, colTerpasang, colBelum, colStatus, colUPT, colBay;
 
 async function loadData() {
   document.getElementById('loading').classList.remove('hidden');
@@ -304,6 +343,7 @@ async function loadData() {
 
     parseSheetData(json.table);
     detectImportantColumns();
+    buildDisplayColumns();
 
     // Exclude SF6 — bukan MTU
     if (colMaterial) {
@@ -352,13 +392,11 @@ function findColumn(keywords) {
   return null;
 }
 
-/* Mapping kolom berdasarkan posisi (zero-indexed):
-   B = index 1 → Pabrikan (sebelumnya "Penyedia Material")
-   H = index 7 → Material
-   Sisanya tetap auto-detect by name. */
 function detectImportantColumns() {
   colULTG = findColumn(['ultg']);
+  colUPT = findColumn(['upt']);
   colGI = findColumn(['gardu induk', 'gi']);
+  colBay = findColumn(['bay']);
   colPenyedia = findColumn(['penyedia pasang', 'penyedia jasa']);
   colMaterial = columns[7] || null;   // kolom H
   colPabrikan = columns[1] || null;   // kolom B
@@ -368,12 +406,36 @@ function detectImportantColumns() {
   colStatus = findColumn(['status', 'keterangan']);
 }
 
+/* Bangun displayColumns:
+   1. Hilangkan kolom UPT
+   2. Pindahkan Pabrikan ke posisi tepat setelah Bay */
+function buildDisplayColumns() {
+  // Mulai dari semua kolom kecuali UPT dan Pabrikan (akan di-insert manual)
+  let cols = columns.filter(c => c !== colUPT && c !== colPabrikan);
+
+  // Sisipkan Pabrikan tepat setelah Bay (kalau ada)
+  if (colPabrikan) {
+    if (colBay) {
+      const bayIdx = cols.indexOf(colBay);
+      if (bayIdx !== -1) {
+        cols.splice(bayIdx + 1, 0, colPabrikan);
+      } else {
+        cols.unshift(colPabrikan);
+      }
+    } else {
+      cols.unshift(colPabrikan);
+    }
+  }
+  displayColumns = cols;
+}
+
 function initDashboard() {
   populateAllFilters();
   renderStats();
   renderCharts();
   renderTable();
   attachListeners();
+  setupAxisLockedScroll();
 }
 
 function getUniqueValues(data, col) {
@@ -393,12 +455,6 @@ function populateSelect(selectId, values, defaultLabel, currentValue) {
   sel.value = (currentValue && values.includes(currentValue)) ? currentValue : '';
 }
 
-/* Cascading scope:
-   level 0 → ULTG: dari semua data
-   level 1 → GI: filter by ULTG
-   level 2 → Penyedia: filter by ULTG + GI
-   level 3 → Material: filter by ULTG + GI + Penyedia
-   level 4 → Pabrikan: filter by ULTG + GI + Penyedia + Material */
 function getScopeForLevel(level) {
   let scope = allData;
   const ultgVal = document.getElementById('filterULTG').value;
@@ -467,7 +523,7 @@ function renderCharts() {
   Chart.defaults.color = textColor;
   Chart.defaults.borderColor = gridColor;
 
-  const barCol = colULTG || colPenyedia || columns[0];
+  const barCol = colULTG || colPenyedia || displayColumns[0];
   const barData = countByColumn(barCol);
   if (barChart) barChart.destroy();
   barChart = new Chart(document.getElementById('barChart').getContext('2d'), {
@@ -483,7 +539,7 @@ function renderCharts() {
     }
   });
 
-  const pieCol = colStatus || colPenyedia || columns[1] || columns[0];
+  const pieCol = colStatus || colPenyedia || displayColumns[1] || displayColumns[0];
   const pieData = countByColumn(pieCol);
   if (pieChart) pieChart.destroy();
   pieChart = new Chart(document.getElementById('pieChart').getContext('2d'), {
@@ -517,8 +573,9 @@ function renderTable() {
   const headerRow = document.getElementById('tableHeaderRow');
   const tbody = document.getElementById('tableBody');
 
+  // Render header sekali. Pakai displayColumns (sudah hide UPT & reorder Pabrikan)
   if (headerRow.children.length === 0) {
-    columns.forEach(col => {
+    displayColumns.forEach(col => {
       const th = document.createElement('th');
       th.innerHTML = `${col}<span class="sort-icon">↕</span>`;
       th.dataset.column = col;
@@ -542,6 +599,17 @@ function renderTable() {
   tbody.innerHTML = '';
   pageData.forEach(row => {
     const tr = document.createElement('tr');
+
+    // Row click → toggle highlight (selalu satu yang aktif)
+    tr.addEventListener('click', () => {
+      const wasSelected = tr.classList.contains('row-selected');
+      // Clear semua selection di tbody
+      tbody.querySelectorAll('tr.row-selected').forEach(r => r.classList.remove('row-selected'));
+      // Kalau row tadi belum selected, tandai sekarang.
+      // Kalau sudah selected (klik kedua), berarti deselect.
+      if (!wasSelected) tr.classList.add('row-selected');
+    });
+
     if (colStatus && row[colStatus]) {
       const sv = String(row[colStatus]).toLowerCase();
       if (sv.includes('kritis') || sv.includes('masalah') || sv.includes('telat') || sv.includes('terlambat') || sv.includes('gagal')) {
@@ -552,7 +620,8 @@ function renderTable() {
       const bv = parseFloat(String(row[colBelum]).replace(/[^\d.-]/g, ''));
       if (bv > 0 && !tr.classList.contains('highlight-danger')) tr.classList.add('highlight-warning');
     }
-    columns.forEach(col => {
+
+    displayColumns.forEach(col => {
       const td = document.createElement('td');
       const val = row[col];
       td.textContent = (val === '' || val === null || val === undefined) ? '-' : val;
@@ -652,6 +721,61 @@ function attachListeners() {
     if (currentPage < totalPages) { currentPage++; renderTable(); }
   });
   document.getElementById('refreshBtn').addEventListener('click', loadData);
+}
+
+/* =======================================================================
+   AXIS-LOCKED SCROLL untuk container tabel.
+   Saat user mulai gestur (touch/wheel), kunci ke 1 sumbu berdasarkan
+   arah dominan. Cegah pergerakan diagonal (yang bikin jejak baris hilang).
+   ======================================================================= */
+function setupAxisLockedScroll() {
+  const el = document.getElementById('tableScroll');
+  if (!el) return;
+
+  let touchStartX = 0, touchStartY = 0;
+  let lockedAxis = null; // 'x' atau 'y'
+  let startScrollLeft = 0, startScrollTop = 0;
+
+  el.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    startScrollLeft = el.scrollLeft;
+    startScrollTop = el.scrollTop;
+    lockedAxis = null;
+  }, { passive: true });
+
+  el.addEventListener('touchmove', (e) => {
+    if (e.touches.length !== 1) return;
+    const dx = e.touches[0].clientX - touchStartX;
+    const dy = e.touches[0].clientY - touchStartY;
+
+    // Tentukan sumbu lock setelah gestur cukup besar (threshold 8px)
+    if (lockedAxis === null) {
+      if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
+        lockedAxis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+      } else {
+        return; // belum cukup gestur, tunggu
+      }
+    }
+
+    // Override default scroll: paksa hanya 1 sumbu
+    if (lockedAxis === 'x') {
+      el.scrollLeft = startScrollLeft - dx;
+      el.scrollTop = startScrollTop;
+      e.preventDefault();
+    } else {
+      el.scrollTop = startScrollTop - dy;
+      el.scrollLeft = startScrollLeft;
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  el.addEventListener('touchend', () => { lockedAxis = null; });
+  el.addEventListener('touchcancel', () => { lockedAxis = null; });
+
+  // Untuk mouse wheel: shift+wheel = horizontal, wheel biasa = vertical
+  // (default browser sudah benar, tidak perlu override)
 }
 
 const themeToggle = document.getElementById('themeToggle');
