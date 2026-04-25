@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard Monitoring KHS MTU</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  /* ========== CSS Variables: Light & Dark theme ========== */
+  :root {
+    --bg: #f5f7fb;
+    --surface: #ffffff;
+    --surface-2: #f0f2f7;
+    --text: #1a1f36;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --success: #16a34a;
+    --warning: #f59e0b;
+    --danger: #dc2626;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-lg: 0 10px 15px rgba(0,0,0,0.08), 0 4px 6px rgba(0,0,0,0.04);
+  }
+  [data-theme="dark"] {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface-2: #283548;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --primary: #3b82f6;
+    --primary-hover: #60a5fa;
+    --success: #22c55e;
+    --warning: #fbbf24;
+    --danger: #ef4444;
+    --shadow: 0 1px 3px rgba(0,0,0,0.4);
+    --shadow-lg: 0 10px 15px rgba(0,0,0,0.4);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    transition: background 0.3s, color 0.3s;
+    line-height: 1.5;
+  }
+
+  /* ========== Header ========== */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.5rem;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .title { display: flex; align-items: center; gap: 0.75rem; }
+  .title h1 { font-size: 1.25rem; font-weight: 600; }
+  .title .subtitle { font-size: 0.8rem; color: var(--text-muted); }
+  .logo {
+    width: 36px; height: 36px;
+    background: var(--primary);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700;
+  }
+  .header-actions { display: flex; gap: 0.5rem; align-items: center; }
+
+  .btn {
+    padding: 0.5rem 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 0.4rem;
+  }
+  .btn:hover { background: var(--surface-2); border-color: var(--primary); }
+  .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
+  .btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+
+  /* ========== Main container ========== */
+  main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1.5rem;
+  }
+
+  /* ========== Stat cards ========== */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  .stat-card .label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+  }
+  .stat-card .value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .stat-card.primary { border-left: 4px solid var(--primary); }
+  .stat-card.success { border-left: 4px solid var(--success); }
+  .stat-card.warning { border-left: 4px solid var(--warning); }
+  .stat-card.danger { border-left: 4px solid var(--danger); }
+
+  /* ========== Filters ========== */
+  .filters {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    align-items: end;
+  }
+  .filter-group { display: flex; flex-direction: column; gap: 0.35rem; }
+  .filter-group label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+  .filter-group select, .filter-group input {
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.9rem;
+    transition: border-color 0.2s;
+  }
+  .filter-group select:focus, .filter-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+
+  /* ========== Charts ========== */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  @media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr; } }
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  .chart-card h3 {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+  .chart-wrapper { position: relative; height: 300px; }
+
+  /* ========== Table ========== */
+  .table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .table-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .table-header h3 { font-size: 1rem; font-weight: 600; }
+  .table-info { font-size: 0.85rem; color: var(--text-muted); }
+  .table-scroll { overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  thead { background: var(--surface-2); }
+  th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    background: var(--surface-2);
+  }
+  th:hover { background: var(--border); }
+  th .sort-icon { opacity: 0.4; margin-left: 0.25rem; font-size: 0.7rem; }
+  th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--primary); }
+  td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  tbody tr { transition: background 0.15s; }
+  tbody tr:hover { background: var(--surface-2); }
+  tbody tr.highlight-danger { background: rgba(220, 38, 38, 0.08); }
+  tbody tr.highlight-danger:hover { background: rgba(220, 38, 38, 0.15); }
+  tbody tr.highlight-warning { background: rgba(245, 158, 11, 0.08); }
+  tbody tr.highlight-warning:hover { background: rgba(245, 158, 11, 0.15); }
+
+  /* ========== Status badge ========== */
+  .badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .badge-success { background: rgba(22, 163, 74, 0.15); color: var(--success); }
+  .badge-warning { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+  .badge-danger { background: rgba(220, 38, 38, 0.15); color: var(--danger); }
+  .badge-neutral { background: var(--surface-2); color: var(--text-muted); }
+
+  /* ========== Loading & error ========== */
+  .loading, .error {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 3rem 1.5rem;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .spinner {
+    border: 4px solid var(--border);
+    border-top: 4px solid var(--primary);
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  .error h3 { color: var(--danger); margin-bottom: 0.5rem; }
+  .error p { color: var(--text-muted); margin-bottom: 1rem; }
+
+  /* ========== Pagination ========== */
+  .pagination {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .pagination-info { font-size: 0.85rem; color: var(--text-muted); }
+  .pagination-buttons { display: flex; gap: 0.4rem; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- ========== HEADER ========== -->
+<header>
+  <div class="header-inner">
+    <div class="title">
+      <div class="logo">⚡</div>
+      <div>
+        <h1>Dashboard Monitoring KHS MTU</h1>
+        <div class="subtitle">Realtime data dari Google Sheets</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn" id="refreshBtn" title="Muat ulang data">🔄 Refresh</button>
+      <button class="btn" id="themeToggle" title="Ganti tema">🌙 Dark</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- Loading state -->
+  <div id="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Memuat data dari Google Sheets...</p>
+  </div>
+
+  <!-- Error state -->
+  <div id="error" class="error hidden">
+    <h3>Gagal memuat data</h3>
+    <p id="errorMessage">Terjadi kesalahan saat mengambil data.</p>
+    <button class="btn btn-primary" onclick="loadData()">Coba Lagi</button>
+  </div>
+
+  <!-- Dashboard content (hidden until data ready) -->
+  <div id="dashboard" class="hidden">
+
+    <!-- Stat cards -->
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <div class="filter-group">
+        <label for="searchInput">🔍 Pencarian</label>
+        <input type="text" id="searchInput" placeholder="Cari data..." />
+      </div>
+      <div class="filter-group">
+        <label for="filterULTG">ULTG</label>
+        <select id="filterULTG"><option value="">Semua ULTG</option></select>
+      </div>
+      <div class="filter-group">
+        <label for="filterGI">Gardu Induk</label>
+        <select id="filterGI"><option value="">Semua GI</option></select>
+      </div>
+      <div class="filter-group">
+        <label for="filterStatus">Status</label>
+        <select id="filterStatus"><option value="">Semua Status</option></select>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3>📊 Jumlah per Kategori</h3>
+        <div class="chart-wrapper"><canvas id="barChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>🥧 Proporsi Status</h3>
+        <div class="chart-wrapper"><canvas id="pieChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+      <div class="table-header">
+        <h3>📋 Data Detail</h3>
+        <div class="table-info" id="tableInfo">Menampilkan 0 data</div>
+      </div>
+      <div class="table-scroll">
+        <table id="dataTable">
+          <thead><tr id="tableHeaderRow"></tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <div class="pagination-info" id="paginationInfo"></div>
+        <div class="pagination-buttons">
+          <button class="btn" id="prevPage">← Prev</button>
+          <button class="btn" id="nextPage">Next →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+/* ============================================================
+   KONFIGURASI
+   ============================================================ */
+const SHEET_ID = '1n2rFEUf5O02qZuUqEK9WqID5nC9CGObcokTN2qZ8Sps';
+const GID = '1351233736';
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}`;
+const ROWS_PER_PAGE = 25;
+
+/* ============================================================
+   STATE GLOBAL
+   ============================================================ */
+let allData = [];          // semua data hasil fetch
+let filteredData = [];     // data setelah filter/search
+let columns = [];          // nama kolom
+let currentPage = 1;
+let sortColumn = null;
+let sortDirection = 'asc';
+let barChart = null;
+let pieChart = null;
+
+/* ============================================================
+   FETCH DATA DARI GOOGLE SHEETS (format gviz)
+   gviz mengembalikan teks dengan prefix khusus, harus diparse
+   ============================================================ */
+async function loadData() {
+  document.getElementById('loading').classList.remove('hidden');
+  document.getElementById('error').classList.add('hidden');
+  document.getElementById('dashboard').classList.add('hidden');
+
+  try {
+    const response = await fetch(SHEET_URL);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const text = await response.text();
+
+    // gviz response format: "/*O_o*/\ngoogle.visualization.Query.setResponse({...});"
+    // Kita ekstrak JSON di antara kurung pertama dan terakhir
+    const jsonStart = text.indexOf('{');
+    const jsonEnd = text.lastIndexOf('}') + 1;
+    const json = JSON.parse(text.substring(jsonStart, jsonEnd));
+
+    if (!json.table) throw new Error('Format data tidak sesuai');
+
+    parseSheetData(json.table);
+    initDashboard();
+
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('dashboard').classList.remove('hidden');
+  } catch (err) {
+    console.error('Error loading data:', err);
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('error').classList.remove('hidden');
+    document.getElementById('errorMessage').textContent =
+      `${err.message}. Pastikan spreadsheet sudah di-publish ke web atau sharing-nya "Anyone with link".`;
+  }
+}
+
+/* ============================================================
+   PARSING DATA gviz
+   table.cols = array nama kolom
+   table.rows = array baris, setiap baris punya array c (cells)
+   ============================================================ */
+function parseSheetData(table) {
+  // Ambil nama kolom — kalau label kosong, pakai id atau "Col N"
+  columns = table.cols.map((col, i) => col.label || col.id || `Kolom ${i+1}`);
+
+  allData = table.rows.map(row => {
+    const obj = {};
+    row.c.forEach((cell, i) => {
+      let val = '';
+      if (cell) {
+        // Untuk tanggal/datetime, gviz return objek Date string — pakai 'f' (formatted) jika ada
+        if (cell.f !== undefined && cell.f !== null) val = cell.f;
+        else if (cell.v !== undefined && cell.v !== null) val = cell.v;
+      }
+      obj[columns[i]] = val;
+    });
+    return obj;
+  }).filter(row => {
+    // Buang baris yang semuanya kosong
+    return Object.values(row).some(v => v !== '' && v !== null);
+  });
+
+  filteredData = [...allData];
+}
+
+/* ============================================================
+   DETEKSI KOLOM PENTING (auto-detect berdasarkan nama)
+   Berguna karena nama kolom bisa beda-beda di setiap sheet
+   ============================================================ */
+function findColumn(keywords) {
+  const lower = columns.map(c => c.toLowerCase());
+  for (const kw of keywords) {
+    const idx = lower.findIndex(c => c.includes(kw.toLowerCase()));
+    if (idx !== -1) return columns[idx];
+  }
+  return null;
+}
+
+/* ============================================================
+   INIT DASHBOARD: stat cards, filter, chart, table
+   ============================================================ */
+function initDashboard() {
+  populateFilters();
+  renderStats();
+  renderCharts();
+  renderTable();
+  attachListeners();
+}
+
+/* ============================================================
+   ISI DROPDOWN FILTER (ULTG, GI, STATUS)
+   ============================================================ */
+function populateFilters() {
+  const ultgCol = findColumn(['ultg']);
+  const giCol = findColumn(['gardu induk', 'gi']);
+  const statusCol = findColumn(['status', 'keterangan']);
+
+  fillSelect('filterULTG', ultgCol, 'Semua ULTG');
+  fillSelect('filterGI', giCol, 'Semua GI');
+  fillSelect('filterStatus', statusCol, 'Semua Status');
+}
+
+function fillSelect(selectId, columnName, defaultLabel) {
+  const sel = document.getElementById(selectId);
+  sel.innerHTML = `<option value="">${defaultLabel}</option>`;
+  if (!columnName) return;
+  const uniqueValues = [...new Set(allData.map(r => r[columnName]).filter(v => v && v !== ''))].sort();
+  uniqueValues.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v;
+    opt.textContent = v;
+    sel.appendChild(opt);
+  });
+  sel.dataset.column = columnName;
+}
+
+/* ============================================================
+   RENDER STATS CARDS
+   ============================================================ */
+function renderStats() {
+  const statsGrid = document.getElementById('statsGrid');
+  const total = filteredData.length;
+
+  // Auto-detect kolom angka untuk Jumlah, Terpasang, Belum Terpasang
+  const jumlahCol = findColumn(['jumlah mtu', 'jumlah']);
+  const pasangCol = findColumn(['terpasang', 'sudah']);
+  const belumCol = findColumn(['belum terpasang', 'belum', 'sisa']);
+
+  const sumJumlah = sumColumn(jumlahCol);
+  const sumPasang = sumColumn(pasangCol);
+  const sumBelum = sumColumn(belumCol);
+
+  statsGrid.innerHTML = `
+    <div class="stat-card primary">
+      <div class="label">Total Baris Data</div>
+      <div class="value">${total.toLocaleString('id-ID')}</div>
+    </div>
+    ${jumlahCol ? `<div class="stat-card primary"><div class="label">${jumlahCol}</div><div class="value">${sumJumlah.toLocaleString('id-ID')}</div></div>` : ''}
+    ${pasangCol ? `<div class="stat-card success"><div class="label">${pasangCol}</div><div class="value">${sumPasang.toLocaleString('id-ID')}</div></div>` : ''}
+    ${belumCol ? `<div class="stat-card warning"><div class="label">${belumCol}</div><div class="value">${sumBelum.toLocaleString('id-ID')}</div></div>` : ''}
+  `;
+}
+
+function sumColumn(col) {
+  if (!col) return 0;
+  return filteredData.reduce((sum, r) => {
+    const v = parseFloat(String(r[col]).replace(/[^\d.-]/g, ''));
+    return sum + (isNaN(v) ? 0 : v);
+  }, 0);
+}
+
+/* ============================================================
+   RENDER CHARTS (Bar + Pie)
+   ============================================================ */
+function renderCharts() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const textColor = isDark ? '#f1f5f9' : '#1a1f36';
+  const gridColor = isDark ? '#334155' : '#e5e7eb';
+  Chart.defaults.color = textColor;
+  Chart.defaults.borderColor = gridColor;
+
+  // Bar chart: count per ULTG (atau kategori utama)
+  const barCol = findColumn(['ultg', 'penyedia', 'pt', 'kategori']) || columns[0];
+  const barData = countByColumn(barCol);
+
+  const barCtx = document.getElementById('barChart').getContext('2d');
+  if (barChart) barChart.destroy();
+  barChart = new Chart(barCtx, {
+    type: 'bar',
+    data: {
+      labels: Object.keys(barData),
+      datasets: [{
+        label: `Jumlah per ${barCol}`,
+        data: Object.values(barData),
+        backgroundColor: '#3b82f6',
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: gridColor } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Pie chart: proporsi status
+  const pieCol = findColumn(['status', 'keterangan', 'sifat']) || columns[1] || columns[0];
+  const pieData = countByColumn(pieCol);
+
+  const pieCtx = document.getElementById('pieChart').getContext('2d');
+  if (pieChart) pieChart.destroy();
+  pieChart = new Chart(pieCtx, {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(pieData),
+      datasets: [{
+        data: Object.values(pieData),
+        backgroundColor: ['#3b82f6','#22c55e','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899','#84cc16','#f97316','#6366f1'],
+        borderWidth: 2,
+        borderColor: isDark ? '#1e293b' : '#fff'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 8, font: { size: 11 } } } }
+    }
+  });
+}
+
+function countByColumn(col) {
+  if (!col) return {};
+  const counts = {};
+  filteredData.forEach(r => {
+    const v = r[col];
+    if (v !== '' && v !== null && v !== undefined) {
+      counts[v] = (counts[v] || 0) + 1;
+    }
+  });
+  // Sort & ambil top 10 agar bar chart tidak pecah
+  return Object.fromEntries(
+    Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 10)
+  );
+}
+
+/* ============================================================
+   RENDER TABLE
+   ============================================================ */
+function renderTable() {
+  const headerRow = document.getElementById('tableHeaderRow');
+  const tbody = document.getElementById('tableBody');
+
+  // Header — hanya render sekali (atau update sort indicator)
+  if (headerRow.children.length === 0) {
+    columns.forEach(col => {
+      const th = document.createElement('th');
+      th.innerHTML = `${col}<span class="sort-icon">↕</span>`;
+      th.dataset.column = col;
+      th.addEventListener('click', () => handleSort(col));
+      headerRow.appendChild(th);
+    });
+  }
+  // Update sort indicator
+  Array.from(headerRow.children).forEach(th => {
+    th.classList.remove('sort-asc', 'sort-desc');
+    const icon = th.querySelector('.sort-icon');
+    if (th.dataset.column === sortColumn) {
+      th.classList.add(sortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+      icon.textContent = sortDirection === 'asc' ? '↑' : '↓';
+    } else {
+      icon.textContent = '↕';
+    }
+  });
+
+  // Body — pagination
+  const start = (currentPage - 1) * ROWS_PER_PAGE;
+  const end = start + ROWS_PER_PAGE;
+  const pageData = filteredData.slice(start, end);
+
+  tbody.innerHTML = '';
+  const statusCol = findColumn(['status', 'keterangan']);
+  const belumCol = findColumn(['belum terpasang', 'belum', 'sisa']);
+
+  pageData.forEach(row => {
+    const tr = document.createElement('tr');
+
+    // Highlight: kalau "belum terpasang" > 0 → warning; kalau status mengandung "kritis"/"masalah"/"telat" → danger
+    if (statusCol && row[statusCol]) {
+      const statusVal = String(row[statusCol]).toLowerCase();
+      if (statusVal.includes('kritis') || statusVal.includes('masalah') || statusVal.includes('telat') || statusVal.includes('terlambat') || statusVal.includes('gagal')) {
+        tr.classList.add('highlight-danger');
+      }
+    }
+    if (belumCol && row[belumCol]) {
+      const belumVal = parseFloat(String(row[belumCol]).replace(/[^\d.-]/g, ''));
+      if (belumVal > 0 && !tr.classList.contains('highlight-danger')) {
+        tr.classList.add('highlight-warning');
+      }
+    }
+
+    columns.forEach(col => {
+      const td = document.createElement('td');
+      const val = row[col];
+      td.textContent = (val === '' || val === null || val === undefined) ? '-' : val;
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+
+  // Update info & pagination
+  document.getElementById('tableInfo').textContent =
+    `Menampilkan ${filteredData.length === 0 ? 0 : start + 1}-${Math.min(end, filteredData.length)} dari ${filteredData.length} data`;
+
+  const totalPages = Math.max(1, Math.ceil(filteredData.length / ROWS_PER_PAGE));
+  document.getElementById('paginationInfo').textContent = `Halaman ${currentPage} dari ${totalPages}`;
+  document.getElementById('prevPage').disabled = currentPage === 1;
+  document.getElementById('nextPage').disabled = currentPage >= totalPages;
+}
+
+/* ============================================================
+   SORT
+   ============================================================ */
+function handleSort(col) {
+  if (sortColumn === col) {
+    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortColumn = col;
+    sortDirection = 'asc';
+  }
+  filteredData.sort((a, b) => {
+    const va = a[col], vb = b[col];
+    // Coba parse sebagai angka dulu
+    const na = parseFloat(String(va).replace(/[^\d.-]/g, ''));
+    const nb = parseFloat(String(vb).replace(/[^\d.-]/g, ''));
+    if (!isNaN(na) && !isNaN(nb)) {
+      return sortDirection === 'asc' ? na - nb : nb - na;
+    }
+    const sa = String(va).toLowerCase();
+    const sb = String(vb).toLowerCase();
+    if (sa < sb) return sortDirection === 'asc' ? -1 : 1;
+    if (sa > sb) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+  currentPage = 1;
+  renderTable();
+}
+
+/* ============================================================
+   APPLY FILTERS & SEARCH
+   ============================================================ */
+function applyFilters() {
+  const search = document.getElementById('searchInput').value.toLowerCase().trim();
+  const ultgSel = document.getElementById('filterULTG');
+  const giSel = document.getElementById('filterGI');
+  const statusSel = document.getElementById('filterStatus');
+
+  filteredData = allData.filter(row => {
+    // Filter dropdown
+    if (ultgSel.value && row[ultgSel.dataset.column] !== ultgSel.value) return false;
+    if (giSel.value && row[giSel.dataset.column] !== giSel.value) return false;
+    if (statusSel.value && row[statusSel.dataset.column] !== statusSel.value) return false;
+    // Search di semua kolom
+    if (search) {
+      const match = Object.values(row).some(v =>
+        String(v).toLowerCase().includes(search)
+      );
+      if (!match) return false;
+    }
+    return true;
+  });
+
+  currentPage = 1;
+  renderStats();
+  renderCharts();
+  renderTable();
+}
+
+/* ============================================================
+   EVENT LISTENERS
+   ============================================================ */
+function attachListeners() {
+  document.getElementById('searchInput').addEventListener('input', debounce(applyFilters, 300));
+  document.getElementById('filterULTG').addEventListener('change', applyFilters);
+  document.getElementById('filterGI').addEventListener('change', applyFilters);
+  document.getElementById('filterStatus').addEventListener('change', applyFilters);
+
+  document.getElementById('prevPage').addEventListener('click', () => {
+    if (currentPage > 1) { currentPage--; renderTable(); }
+  });
+  document.getElementById('nextPage').addEventListener('click', () => {
+    const totalPages = Math.ceil(filteredData.length / ROWS_PER_PAGE);
+    if (currentPage < totalPages) { currentPage++; renderTable(); }
+  });
+
+  document.getElementById('refreshBtn').addEventListener('click', loadData);
+}
+
+function debounce(fn, delay) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+}
+
+/* ============================================================
+   DARK MODE TOGGLE
+   ============================================================ */
+const themeToggle = document.getElementById('themeToggle');
+const savedTheme = localStorage.getItem('theme') || 'light';
+applyTheme(savedTheme);
+
+themeToggle.addEventListener('click', () => {
+  const current = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  localStorage.setItem('theme', next);
+  // Re-render charts agar warna mengikuti tema
+  if (allData.length) renderCharts();
+});
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  themeToggle.textContent = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
+}
+
+/* ============================================================
+   START
+   ============================================================ */
+loadData();
+</script>
+</body>
+</html>
