@@ -184,7 +184,11 @@
     overflow-x: auto; overflow-y: auto;
     max-height: 600px;
     -webkit-overflow-scrolling: touch;
-    touch-action: pan-x pan-y;
+    /* Hint browser untuk optimasi scroll */
+    will-change: scroll-position;
+    contain: paint;
+    /* Scroll snap ringan opsional, biar geser lebih "kunci" */
+    overscroll-behavior: contain;
   }
   table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
   thead { background: var(--surface-2); }
@@ -839,58 +843,9 @@ function attachListeners() {
   });
 }
 
-/* ===========================================================
-   Axis-locked direct scroll untuk container tabel.
-   - Lock 1 sumbu setelah threshold kecil (5px) → respons cepat
-   - Direct mapping 1:1 jari ke scroll — TANPA momentum/inertia
-     supaya tidak overshoot & tetap akurat di HP
-   =========================================================== */
+/* Pakai native scroll browser — paling halus di HP */
 function setupAxisLockedScroll() {
-  const el = document.getElementById('tableScroll');
-  if (!el) return;
-
-  let touchStartX = 0, touchStartY = 0;
-  let lockedAxis = null;
-  let startScrollLeft = 0, startScrollTop = 0;
-
-  el.addEventListener('touchstart', (e) => {
-    if (e.touches.length !== 1) return;
-    const t = e.touches[0];
-    touchStartX = t.clientX;
-    touchStartY = t.clientY;
-    startScrollLeft = el.scrollLeft;
-    startScrollTop = el.scrollTop;
-    lockedAxis = null;
-  }, { passive: true });
-
-  el.addEventListener('touchmove', (e) => {
-    if (e.touches.length !== 1) return;
-    const t = e.touches[0];
-    const dx = t.clientX - touchStartX;
-    const dy = t.clientY - touchStartY;
-
-    if (lockedAxis === null) {
-      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-        lockedAxis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
-      } else {
-        return;
-      }
-    }
-
-    // Direct 1:1 mapping — geser tabel sejauh jari bergerak, tidak lebih
-    if (lockedAxis === 'x') {
-      el.scrollLeft = startScrollLeft - dx;
-      el.scrollTop = startScrollTop;
-      e.preventDefault();
-    } else {
-      el.scrollTop = startScrollTop - dy;
-      el.scrollLeft = startScrollLeft;
-      e.preventDefault();
-    }
-  }, { passive: false });
-
-  el.addEventListener('touchend', () => { lockedAxis = null; });
-  el.addEventListener('touchcancel', () => { lockedAxis = null; });
+  // dikosongkan, biarkan browser handle scroll natively
 }
 
 /* Scroll-to-top button — muncul setelah scroll > 300px */
