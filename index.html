@@ -3,342 +3,262 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Dashboard Monitoring KHS MTU</title>
+<title>Dashboard Monitoring KHS MTU 2024</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-  /* ========== CSS Variables: Light & Dark theme ========== */
   :root {
-    --bg: #f5f7fb;
-    --surface: #ffffff;
-    --surface-2: #f0f2f7;
-    --text: #1a1f36;
-    --text-muted: #6b7280;
-    --border: #e5e7eb;
-    --primary: #2563eb;
-    --primary-hover: #1d4ed8;
-    --success: #16a34a;
-    --warning: #f59e0b;
-    --danger: #dc2626;
+    --bg: #f5f7fb; --surface: #ffffff; --surface-2: #f0f2f7;
+    --text: #1a1f36; --text-muted: #6b7280; --border: #e5e7eb;
+    --primary: #2563eb; --primary-hover: #1d4ed8;
+    --success: #16a34a; --warning: #f59e0b; --danger: #dc2626;
     --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-    --shadow-lg: 0 10px 15px rgba(0,0,0,0.08), 0 4px 6px rgba(0,0,0,0.04);
   }
   [data-theme="dark"] {
-    --bg: #0f172a;
-    --surface: #1e293b;
-    --surface-2: #283548;
-    --text: #f1f5f9;
-    --text-muted: #94a3b8;
-    --border: #334155;
-    --primary: #3b82f6;
-    --primary-hover: #60a5fa;
-    --success: #22c55e;
-    --warning: #fbbf24;
-    --danger: #ef4444;
+    --bg: #0f172a; --surface: #1e293b; --surface-2: #283548;
+    --text: #f1f5f9; --text-muted: #94a3b8; --border: #334155;
+    --primary: #3b82f6; --primary-hover: #60a5fa;
+    --success: #22c55e; --warning: #fbbf24; --danger: #ef4444;
     --shadow: 0 1px 3px rgba(0,0,0,0.4);
-    --shadow-lg: 0 10px 15px rgba(0,0,0,0.4);
   }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  /* Hilangkan overflow horizontal global */
+  html, body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    transition: background 0.3s, color 0.3s;
-    line-height: 1.5;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh; transition: background 0.3s, color 0.3s; line-height: 1.5;
   }
 
-  /* ========== Header ========== */
   header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 1rem 1.5rem;
-    box-shadow: var(--shadow);
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 1rem; box-shadow: var(--shadow);
+    position: sticky; top: 0; z-index: 100;
+    width: 100%;
   }
   .header-inner {
-    max-width: 1400px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
+    width: 100%;
+    max-width: 1400px; margin: 0 auto;
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 0.75rem; flex-wrap: wrap;
   }
-  .title { display: flex; align-items: center; gap: 0.75rem; }
-  .title h1 { font-size: 1.25rem; font-weight: 600; }
-  .title .subtitle { font-size: 0.8rem; color: var(--text-muted); }
+  .title { display: flex; align-items: center; gap: 0.6rem; min-width: 0; flex: 1; }
+  .title h1 {
+    font-size: clamp(0.95rem, 3.5vw, 1.25rem);
+    font-weight: 600;
+    line-height: 1.25;
+  }
+  .title .subtitle {
+    font-size: clamp(0.7rem, 2vw, 0.8rem);
+    color: var(--text-muted);
+  }
   .logo {
-    width: 36px; height: 36px;
-    background: var(--primary);
-    border-radius: 8px;
+    width: 36px; height: 36px; flex-shrink: 0;
+    background: var(--primary); border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
     color: white; font-weight: 700;
   }
-  .header-actions { display: flex; gap: 0.5rem; align-items: center; }
-
+  .header-actions { display: flex; gap: 0.4rem; align-items: center; flex-shrink: 0; }
   .btn {
-    padding: 0.5rem 0.9rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--surface);
-    color: var(--text);
-    cursor: pointer;
-    font-size: 0.875rem;
-    transition: all 0.2s;
-    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--surface); color: var(--text); cursor: pointer;
+    font-size: 0.85rem; transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    white-space: nowrap;
   }
   .btn:hover { background: var(--surface-2); border-color: var(--primary); }
   .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
-  .btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  /* ========== Main container ========== */
   main {
+    width: 100%;
     max-width: 1400px;
     margin: 0 auto;
-    padding: 1.5rem;
+    padding: 1rem;
   }
 
-  /* ========== Stat cards ========== */
   .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    width: 100%;
   }
   .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.25rem;
-    box-shadow: var(--shadow);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem 1.25rem; box-shadow: var(--shadow);
+    min-width: 0;
   }
   .stat-card .label {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.5rem;
+    font-size: 0.75rem; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;
+    word-break: break-word;
   }
   .stat-card .value {
-    font-size: 1.75rem;
+    font-size: clamp(1.4rem, 4vw, 1.75rem);
     font-weight: 700;
-    color: var(--text);
+    word-break: break-word;
   }
   .stat-card.primary { border-left: 4px solid var(--primary); }
   .stat-card.success { border-left: 4px solid var(--success); }
   .stat-card.warning { border-left: 4px solid var(--warning); }
-  .stat-card.danger { border-left: 4px solid var(--danger); }
 
-  /* ========== Filters ========== */
   .filters {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1rem 1.25rem;
-    margin-bottom: 1.5rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem;
     box-shadow: var(--shadow);
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1rem;
-    align-items: end;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+    gap: 0.75rem;
+    width: 100%;
   }
-  .filter-group { display: flex; flex-direction: column; gap: 0.35rem; }
+  .filter-group { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
   .filter-group label {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-weight: 600;
+    font-size: 0.7rem; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;
   }
-  .filter-group select, .filter-group input {
-    padding: 0.55rem 0.75rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--surface);
-    color: var(--text);
+  .filter-group select {
+    width: 100%;
+    padding: 0.55rem 0.75rem; border: 1px solid var(--border);
+    border-radius: 8px; background: var(--surface); color: var(--text);
     font-size: 0.9rem;
-    transition: border-color 0.2s;
   }
-  .filter-group select:focus, .filter-group input:focus {
-    outline: none;
-    border-color: var(--primary);
-  }
+  .filter-group select:focus { outline: none; border-color: var(--primary); }
+  .filter-group select:disabled { opacity: 0.5; cursor: not-allowed; }
+  .filter-reset { grid-column: 1 / -1; display: flex; justify-content: flex-end; }
 
-  /* ========== Charts ========== */
   .charts-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    width: 100%;
   }
-  @media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr; } }
   .chart-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.25rem;
-    box-shadow: var(--shadow);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem; box-shadow: var(--shadow);
+    min-width: 0;
   }
   .chart-card h3 {
-    font-size: 1rem;
-    margin-bottom: 1rem;
-    font-weight: 600;
+    font-size: 0.95rem; margin-bottom: 0.75rem; font-weight: 600;
   }
-  .chart-wrapper { position: relative; height: 300px; }
+  .chart-wrapper { position: relative; height: 280px; width: 100%; }
 
-  /* ========== Table ========== */
   .table-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    box-shadow: var(--shadow);
-    overflow: hidden;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; box-shadow: var(--shadow);
+    overflow: hidden; width: 100%;
   }
   .table-header {
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.75rem;
+    padding: 0.85rem 1rem; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 0.5rem;
   }
-  .table-header h3 { font-size: 1rem; font-weight: 600; }
-  .table-info { font-size: 0.85rem; color: var(--text-muted); }
-  .table-scroll { overflow-x: auto; }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.875rem;
+  .table-header h3 { font-size: 0.95rem; font-weight: 600; }
+  .table-info { font-size: 0.8rem; color: var(--text-muted); }
+
+  /* Tabel detail BOLEH di-scroll horizontal (sengaja) */
+  .table-scroll {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 600px;
+    -webkit-overflow-scrolling: touch;
   }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
   thead { background: var(--surface-2); }
   th {
-    padding: 0.75rem 1rem;
-    text-align: left;
-    font-weight: 600;
-    color: var(--text);
-    border-bottom: 1px solid var(--border);
-    cursor: pointer;
-    user-select: none;
-    white-space: nowrap;
-    position: sticky;
-    top: 0;
-    background: var(--surface-2);
+    padding: 0.7rem 0.9rem; text-align: left; font-weight: 600;
+    border-bottom: 1px solid var(--border); cursor: pointer;
+    user-select: none; white-space: nowrap;
+    position: sticky; top: 0; background: var(--surface-2); z-index: 1;
   }
   th:hover { background: var(--border); }
   th .sort-icon { opacity: 0.4; margin-left: 0.25rem; font-size: 0.7rem; }
   th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--primary); }
   td {
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--border);
-    color: var(--text);
+    padding: 0.7rem 0.9rem; border-bottom: 1px solid var(--border);
+    white-space: nowrap;
   }
   tbody tr { transition: background 0.15s; }
   tbody tr:hover { background: var(--surface-2); }
   tbody tr.highlight-danger { background: rgba(220, 38, 38, 0.08); }
-  tbody tr.highlight-danger:hover { background: rgba(220, 38, 38, 0.15); }
   tbody tr.highlight-warning { background: rgba(245, 158, 11, 0.08); }
-  tbody tr.highlight-warning:hover { background: rgba(245, 158, 11, 0.15); }
 
-  /* ========== Status badge ========== */
-  .badge {
-    display: inline-block;
-    padding: 0.2rem 0.6rem;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    font-weight: 600;
-  }
-  .badge-success { background: rgba(22, 163, 74, 0.15); color: var(--success); }
-  .badge-warning { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
-  .badge-danger { background: rgba(220, 38, 38, 0.15); color: var(--danger); }
-  .badge-neutral { background: var(--surface-2); color: var(--text-muted); }
-
-  /* ========== Loading & error ========== */
   .loading, .error {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 3rem 1.5rem;
-    text-align: center;
-    box-shadow: var(--shadow);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 2.5rem 1.25rem; text-align: center;
+    box-shadow: var(--shadow); width: 100%;
   }
   .spinner {
-    border: 4px solid var(--border);
-    border-top: 4px solid var(--primary);
-    border-radius: 50%;
-    width: 48px;
-    height: 48px;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 1rem;
+    border: 4px solid var(--border); border-top: 4px solid var(--primary);
+    border-radius: 50%; width: 48px; height: 48px;
+    animation: spin 1s linear infinite; margin: 0 auto 1rem;
   }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   .error h3 { color: var(--danger); margin-bottom: 0.5rem; }
-  .error p { color: var(--text-muted); margin-bottom: 1rem; }
+  .error p { color: var(--text-muted); margin-bottom: 1rem; word-break: break-word; }
 
-  /* ========== Pagination ========== */
   .pagination {
-    padding: 1rem 1.25rem;
-    border-top: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.75rem;
+    padding: 0.85rem 1rem; border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 0.5rem;
   }
-  .pagination-info { font-size: 0.85rem; color: var(--text-muted); }
+  .pagination-info { font-size: 0.8rem; color: var(--text-muted); }
   .pagination-buttons { display: flex; gap: 0.4rem; }
 
   .hidden { display: none !important; }
+
+  /* Responsive tweaks untuk layar HP */
+  @media (max-width: 480px) {
+    main { padding: 0.75rem; }
+    header { padding: 0.75rem; }
+    .title h1 { font-size: 1rem; }
+    .logo { width: 32px; height: 32px; font-size: 0.9rem; }
+    .btn { padding: 0.45rem 0.65rem; font-size: 0.8rem; }
+    .stat-card { padding: 0.85rem 1rem; }
+    .filters, .chart-card { padding: 0.85rem; }
+    .chart-wrapper { height: 240px; }
+  }
 </style>
 </head>
 <body>
 
-<!-- ========== HEADER ========== -->
 <header>
   <div class="header-inner">
     <div class="title">
       <div class="logo">⚡</div>
-      <div>
-        <h1>Dashboard Monitoring KHS MTU</h1>
+      <div style="min-width:0;">
+        <h1>Dashboard Monitoring KHS MTU 2024</h1>
         <div class="subtitle">Realtime data dari Google Sheets</div>
       </div>
     </div>
     <div class="header-actions">
-      <button class="btn" id="refreshBtn" title="Muat ulang data">🔄 Refresh</button>
-      <button class="btn" id="themeToggle" title="Ganti tema">🌙 Dark</button>
+      <button class="btn" id="refreshBtn">🔄 Refresh</button>
+      <button class="btn" id="themeToggle">🌙 Dark</button>
     </div>
   </div>
 </header>
 
 <main>
-  <!-- Loading state -->
   <div id="loading" class="loading">
     <div class="spinner"></div>
     <p>Memuat data dari Google Sheets...</p>
   </div>
 
-  <!-- Error state -->
   <div id="error" class="error hidden">
     <h3>Gagal memuat data</h3>
     <p id="errorMessage">Terjadi kesalahan saat mengambil data.</p>
     <button class="btn btn-primary" onclick="loadData()">Coba Lagi</button>
   </div>
 
-  <!-- Dashboard content (hidden until data ready) -->
   <div id="dashboard" class="hidden">
-
-    <!-- Stat cards -->
     <div class="stats-grid" id="statsGrid"></div>
 
-    <!-- Filters -->
     <div class="filters">
-      <div class="filter-group">
-        <label for="searchInput">🔍 Pencarian</label>
-        <input type="text" id="searchInput" placeholder="Cari data..." />
-      </div>
       <div class="filter-group">
         <label for="filterULTG">ULTG</label>
         <select id="filterULTG"><option value="">Semua ULTG</option></select>
@@ -348,12 +268,18 @@
         <select id="filterGI"><option value="">Semua GI</option></select>
       </div>
       <div class="filter-group">
-        <label for="filterStatus">Status</label>
-        <select id="filterStatus"><option value="">Semua Status</option></select>
+        <label for="filterPenyedia">Penyedia</label>
+        <select id="filterPenyedia"><option value="">Semua Penyedia</option></select>
+      </div>
+      <div class="filter-group">
+        <label for="filterMaterial">Material</label>
+        <select id="filterMaterial"><option value="">Semua Material</option></select>
+      </div>
+      <div class="filter-reset">
+        <button class="btn" id="resetFilters">↺ Reset Filter</button>
       </div>
     </div>
 
-    <!-- Charts -->
     <div class="charts-grid">
       <div class="chart-card">
         <h3>📊 Jumlah per Kategori</h3>
@@ -365,7 +291,6 @@
       </div>
     </div>
 
-    <!-- Table -->
     <div class="table-card">
       <div class="table-header">
         <h3>📋 Data Detail</h3>
@@ -389,30 +314,17 @@
 </main>
 
 <script>
-/* ============================================================
-   KONFIGURASI
-   ============================================================ */
 const SHEET_ID = '1n2rFEUf5O02qZuUqEK9WqID5nC9CGObcokTN2qZ8Sps';
 const GID = '1351233736';
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}`;
 const ROWS_PER_PAGE = 25;
 
-/* ============================================================
-   STATE GLOBAL
-   ============================================================ */
-let allData = [];          // semua data hasil fetch
-let filteredData = [];     // data setelah filter/search
-let columns = [];          // nama kolom
-let currentPage = 1;
-let sortColumn = null;
-let sortDirection = 'asc';
-let barChart = null;
-let pieChart = null;
+let allData = [], filteredData = [], columns = [];
+let currentPage = 1, sortColumn = null, sortDirection = 'asc';
+let barChart = null, pieChart = null;
+let colULTG, colGI, colPenyedia, colMaterial;
+let colJumlah, colTerpasang, colBelum, colStatus;
 
-/* ============================================================
-   FETCH DATA DARI GOOGLE SHEETS (format gviz)
-   gviz mengembalikan teks dengan prefix khusus, harus diparse
-   ============================================================ */
 async function loadData() {
   document.getElementById('loading').classList.remove('hidden');
   document.getElementById('error').classList.add('hidden');
@@ -422,62 +334,41 @@ async function loadData() {
     const response = await fetch(SHEET_URL);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const text = await response.text();
-
-    // gviz response format: "/*O_o*/\ngoogle.visualization.Query.setResponse({...});"
-    // Kita ekstrak JSON di antara kurung pertama dan terakhir
     const jsonStart = text.indexOf('{');
     const jsonEnd = text.lastIndexOf('}') + 1;
     const json = JSON.parse(text.substring(jsonStart, jsonEnd));
-
     if (!json.table) throw new Error('Format data tidak sesuai');
-
     parseSheetData(json.table);
+    detectImportantColumns();
     initDashboard();
-
     document.getElementById('loading').classList.add('hidden');
     document.getElementById('dashboard').classList.remove('hidden');
   } catch (err) {
-    console.error('Error loading data:', err);
+    console.error('Error:', err);
     document.getElementById('loading').classList.add('hidden');
     document.getElementById('error').classList.remove('hidden');
     document.getElementById('errorMessage').textContent =
-      `${err.message}. Pastikan spreadsheet sudah di-publish ke web atau sharing-nya "Anyone with link".`;
+      `${err.message}. Pastikan spreadsheet sudah di-share "Anyone with the link".`;
   }
 }
 
-/* ============================================================
-   PARSING DATA gviz
-   table.cols = array nama kolom
-   table.rows = array baris, setiap baris punya array c (cells)
-   ============================================================ */
 function parseSheetData(table) {
-  // Ambil nama kolom — kalau label kosong, pakai id atau "Col N"
   columns = table.cols.map((col, i) => col.label || col.id || `Kolom ${i+1}`);
-
   allData = table.rows.map(row => {
     const obj = {};
     row.c.forEach((cell, i) => {
       let val = '';
       if (cell) {
-        // Untuk tanggal/datetime, gviz return objek Date string — pakai 'f' (formatted) jika ada
         if (cell.f !== undefined && cell.f !== null) val = cell.f;
         else if (cell.v !== undefined && cell.v !== null) val = cell.v;
       }
       obj[columns[i]] = val;
     });
     return obj;
-  }).filter(row => {
-    // Buang baris yang semuanya kosong
-    return Object.values(row).some(v => v !== '' && v !== null);
-  });
-
+  }).filter(row => Object.values(row).some(v => v !== '' && v !== null));
   filteredData = [...allData];
 }
 
-/* ============================================================
-   DETEKSI KOLOM PENTING (auto-detect berdasarkan nama)
-   Berguna karena nama kolom bisa beda-beda di setiap sheet
-   ============================================================ */
 function findColumn(keywords) {
   const lower = columns.map(c => c.toLowerCase());
   for (const kw of keywords) {
@@ -487,68 +378,85 @@ function findColumn(keywords) {
   return null;
 }
 
-/* ============================================================
-   INIT DASHBOARD: stat cards, filter, chart, table
-   ============================================================ */
+function detectImportantColumns() {
+  colULTG = findColumn(['ultg']);
+  colGI = findColumn(['gardu induk', 'gi']);
+  colPenyedia = findColumn(['penyedia pasang', 'penyedia']);
+  colMaterial = findColumn(['material']);
+  colJumlah = findColumn(['jumlah mtu', 'jumlah']);
+  colTerpasang = findColumn(['terpasang', 'sudah']);
+  colBelum = findColumn(['belum terpasang', 'belum', 'sisa']);
+  colStatus = findColumn(['status', 'keterangan']);
+}
+
 function initDashboard() {
-  populateFilters();
+  populateAllFilters();
   renderStats();
   renderCharts();
   renderTable();
   attachListeners();
 }
 
-/* ============================================================
-   ISI DROPDOWN FILTER (ULTG, GI, STATUS)
-   ============================================================ */
-function populateFilters() {
-  const ultgCol = findColumn(['ultg']);
-  const giCol = findColumn(['gardu induk', 'gi']);
-  const statusCol = findColumn(['status', 'keterangan']);
-
-  fillSelect('filterULTG', ultgCol, 'Semua ULTG');
-  fillSelect('filterGI', giCol, 'Semua GI');
-  fillSelect('filterStatus', statusCol, 'Semua Status');
+function getUniqueValues(data, col) {
+  if (!col) return [];
+  return [...new Set(data.map(r => r[col]).filter(v => v !== '' && v !== null && v !== undefined))]
+    .sort((a, b) => String(a).localeCompare(String(b), 'id'));
 }
 
-function fillSelect(selectId, columnName, defaultLabel) {
+function populateSelect(selectId, values, defaultLabel, currentValue) {
   const sel = document.getElementById(selectId);
   sel.innerHTML = `<option value="">${defaultLabel}</option>`;
-  if (!columnName) return;
-  const uniqueValues = [...new Set(allData.map(r => r[columnName]).filter(v => v && v !== ''))].sort();
-  uniqueValues.forEach(v => {
+  values.forEach(v => {
     const opt = document.createElement('option');
-    opt.value = v;
-    opt.textContent = v;
+    opt.value = v; opt.textContent = v;
     sel.appendChild(opt);
   });
-  sel.dataset.column = columnName;
+  sel.value = (currentValue && values.includes(currentValue)) ? currentValue : '';
 }
 
-/* ============================================================
-   RENDER STATS CARDS
-   ============================================================ */
+function getScopeForLevel(level) {
+  let scope = allData;
+  const ultgVal = document.getElementById('filterULTG').value;
+  const giVal = document.getElementById('filterGI').value;
+  const penyediaVal = document.getElementById('filterPenyedia').value;
+  if (level >= 1 && ultgVal && colULTG) scope = scope.filter(r => r[colULTG] === ultgVal);
+  if (level >= 2 && giVal && colGI) scope = scope.filter(r => r[colGI] === giVal);
+  if (level >= 3 && penyediaVal && colPenyedia) scope = scope.filter(r => r[colPenyedia] === penyediaVal);
+  return scope;
+}
+
+function populateULTG() {
+  const sel = document.getElementById('filterULTG');
+  populateSelect('filterULTG', getUniqueValues(allData, colULTG), 'Semua ULTG', sel.value);
+  sel.disabled = !colULTG;
+}
+function populateGI() {
+  const sel = document.getElementById('filterGI');
+  populateSelect('filterGI', getUniqueValues(getScopeForLevel(1), colGI), 'Semua GI', sel.value);
+  sel.disabled = !colGI;
+}
+function populatePenyedia() {
+  const sel = document.getElementById('filterPenyedia');
+  populateSelect('filterPenyedia', getUniqueValues(getScopeForLevel(2), colPenyedia), 'Semua Penyedia', sel.value);
+  sel.disabled = !colPenyedia;
+}
+function populateMaterial() {
+  const sel = document.getElementById('filterMaterial');
+  populateSelect('filterMaterial', getUniqueValues(getScopeForLevel(3), colMaterial), 'Semua Material', sel.value);
+  sel.disabled = !colMaterial;
+}
+function populateAllFilters() {
+  populateULTG(); populateGI(); populatePenyedia(); populateMaterial();
+}
+
 function renderStats() {
-  const statsGrid = document.getElementById('statsGrid');
-  const total = filteredData.length;
-
-  // Auto-detect kolom angka untuk Jumlah, Terpasang, Belum Terpasang
-  const jumlahCol = findColumn(['jumlah mtu', 'jumlah']);
-  const pasangCol = findColumn(['terpasang', 'sudah']);
-  const belumCol = findColumn(['belum terpasang', 'belum', 'sisa']);
-
-  const sumJumlah = sumColumn(jumlahCol);
-  const sumPasang = sumColumn(pasangCol);
-  const sumBelum = sumColumn(belumCol);
-
-  statsGrid.innerHTML = `
-    <div class="stat-card primary">
-      <div class="label">Total Baris Data</div>
-      <div class="value">${total.toLocaleString('id-ID')}</div>
-    </div>
-    ${jumlahCol ? `<div class="stat-card primary"><div class="label">${jumlahCol}</div><div class="value">${sumJumlah.toLocaleString('id-ID')}</div></div>` : ''}
-    ${pasangCol ? `<div class="stat-card success"><div class="label">${pasangCol}</div><div class="value">${sumPasang.toLocaleString('id-ID')}</div></div>` : ''}
-    ${belumCol ? `<div class="stat-card warning"><div class="label">${belumCol}</div><div class="value">${sumBelum.toLocaleString('id-ID')}</div></div>` : ''}
+  const sumJumlah = sumColumn(colJumlah);
+  const sumPasang = sumColumn(colTerpasang);
+  const sumBelum = sumColumn(colBelum);
+  document.getElementById('statsGrid').innerHTML = `
+    ${colJumlah ? `<div class="stat-card primary"><div class="label">JUMLAH MTU</div><div class="value">${sumJumlah.toLocaleString('id-ID')}</div></div>` : ''}
+    ${colTerpasang ? `<div class="stat-card success"><div class="label">SUDAH TERPASANG</div><div class="value">${sumPasang.toLocaleString('id-ID')}</div></div>` : ''}
+    ${colBelum ? `<div class="stat-card warning"><div class="label">BELUM TERPASANG</div><div class="value">${sumBelum.toLocaleString('id-ID')}</div></div>` : ''}
   `;
 }
 
@@ -560,9 +468,6 @@ function sumColumn(col) {
   }, 0);
 }
 
-/* ============================================================
-   RENDER CHARTS (Bar + Pie)
-   ============================================================ */
 function renderCharts() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   const textColor = isDark ? '#f1f5f9' : '#1a1f36';
@@ -570,48 +475,33 @@ function renderCharts() {
   Chart.defaults.color = textColor;
   Chart.defaults.borderColor = gridColor;
 
-  // Bar chart: count per ULTG (atau kategori utama)
-  const barCol = findColumn(['ultg', 'penyedia', 'pt', 'kategori']) || columns[0];
+  const barCol = colULTG || colPenyedia || columns[0];
   const barData = countByColumn(barCol);
-
-  const barCtx = document.getElementById('barChart').getContext('2d');
   if (barChart) barChart.destroy();
-  barChart = new Chart(barCtx, {
+  barChart = new Chart(document.getElementById('barChart').getContext('2d'), {
     type: 'bar',
     data: {
       labels: Object.keys(barData),
-      datasets: [{
-        label: `Jumlah per ${barCol}`,
-        data: Object.values(barData),
-        backgroundColor: '#3b82f6',
-        borderRadius: 6,
-      }]
+      datasets: [{ label: `Jumlah per ${barCol}`, data: Object.values(barData), backgroundColor: '#3b82f6', borderRadius: 6 }]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
-      scales: {
-        y: { beginAtZero: true, grid: { color: gridColor } },
-        x: { grid: { display: false } }
-      }
+      scales: { y: { beginAtZero: true, grid: { color: gridColor } }, x: { grid: { display: false } } }
     }
   });
 
-  // Pie chart: proporsi status
-  const pieCol = findColumn(['status', 'keterangan', 'sifat']) || columns[1] || columns[0];
+  const pieCol = colStatus || colPenyedia || columns[1] || columns[0];
   const pieData = countByColumn(pieCol);
-
-  const pieCtx = document.getElementById('pieChart').getContext('2d');
   if (pieChart) pieChart.destroy();
-  pieChart = new Chart(pieCtx, {
+  pieChart = new Chart(document.getElementById('pieChart').getContext('2d'), {
     type: 'doughnut',
     data: {
       labels: Object.keys(pieData),
       datasets: [{
         data: Object.values(pieData),
         backgroundColor: ['#3b82f6','#22c55e','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899','#84cc16','#f97316','#6366f1'],
-        borderWidth: 2,
-        borderColor: isDark ? '#1e293b' : '#fff'
+        borderWidth: 2, borderColor: isDark ? '#1e293b' : '#fff'
       }]
     },
     options: {
@@ -626,24 +516,15 @@ function countByColumn(col) {
   const counts = {};
   filteredData.forEach(r => {
     const v = r[col];
-    if (v !== '' && v !== null && v !== undefined) {
-      counts[v] = (counts[v] || 0) + 1;
-    }
+    if (v !== '' && v !== null && v !== undefined) counts[v] = (counts[v] || 0) + 1;
   });
-  // Sort & ambil top 10 agar bar chart tidak pecah
-  return Object.fromEntries(
-    Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 10)
-  );
+  return Object.fromEntries(Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 10));
 }
 
-/* ============================================================
-   RENDER TABLE
-   ============================================================ */
 function renderTable() {
   const headerRow = document.getElementById('tableHeaderRow');
   const tbody = document.getElementById('tableBody');
 
-  // Header — hanya render sekali (atau update sort indicator)
   if (headerRow.children.length === 0) {
     columns.forEach(col => {
       const th = document.createElement('th');
@@ -653,44 +534,32 @@ function renderTable() {
       headerRow.appendChild(th);
     });
   }
-  // Update sort indicator
   Array.from(headerRow.children).forEach(th => {
     th.classList.remove('sort-asc', 'sort-desc');
     const icon = th.querySelector('.sort-icon');
     if (th.dataset.column === sortColumn) {
       th.classList.add(sortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
       icon.textContent = sortDirection === 'asc' ? '↑' : '↓';
-    } else {
-      icon.textContent = '↕';
-    }
+    } else { icon.textContent = '↕'; }
   });
 
-  // Body — pagination
   const start = (currentPage - 1) * ROWS_PER_PAGE;
   const end = start + ROWS_PER_PAGE;
   const pageData = filteredData.slice(start, end);
 
   tbody.innerHTML = '';
-  const statusCol = findColumn(['status', 'keterangan']);
-  const belumCol = findColumn(['belum terpasang', 'belum', 'sisa']);
-
   pageData.forEach(row => {
     const tr = document.createElement('tr');
-
-    // Highlight: kalau "belum terpasang" > 0 → warning; kalau status mengandung "kritis"/"masalah"/"telat" → danger
-    if (statusCol && row[statusCol]) {
-      const statusVal = String(row[statusCol]).toLowerCase();
-      if (statusVal.includes('kritis') || statusVal.includes('masalah') || statusVal.includes('telat') || statusVal.includes('terlambat') || statusVal.includes('gagal')) {
+    if (colStatus && row[colStatus]) {
+      const sv = String(row[colStatus]).toLowerCase();
+      if (sv.includes('kritis') || sv.includes('masalah') || sv.includes('telat') || sv.includes('terlambat') || sv.includes('gagal')) {
         tr.classList.add('highlight-danger');
       }
     }
-    if (belumCol && row[belumCol]) {
-      const belumVal = parseFloat(String(row[belumCol]).replace(/[^\d.-]/g, ''));
-      if (belumVal > 0 && !tr.classList.contains('highlight-danger')) {
-        tr.classList.add('highlight-warning');
-      }
+    if (colBelum && row[colBelum]) {
+      const bv = parseFloat(String(row[colBelum]).replace(/[^\d.-]/g, ''));
+      if (bv > 0 && !tr.classList.contains('highlight-danger')) tr.classList.add('highlight-warning');
     }
-
     columns.forEach(col => {
       const td = document.createElement('td');
       const val = row[col];
@@ -700,36 +569,23 @@ function renderTable() {
     tbody.appendChild(tr);
   });
 
-  // Update info & pagination
   document.getElementById('tableInfo').textContent =
     `Menampilkan ${filteredData.length === 0 ? 0 : start + 1}-${Math.min(end, filteredData.length)} dari ${filteredData.length} data`;
-
   const totalPages = Math.max(1, Math.ceil(filteredData.length / ROWS_PER_PAGE));
   document.getElementById('paginationInfo').textContent = `Halaman ${currentPage} dari ${totalPages}`;
   document.getElementById('prevPage').disabled = currentPage === 1;
   document.getElementById('nextPage').disabled = currentPage >= totalPages;
 }
 
-/* ============================================================
-   SORT
-   ============================================================ */
 function handleSort(col) {
-  if (sortColumn === col) {
-    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-  } else {
-    sortColumn = col;
-    sortDirection = 'asc';
-  }
+  if (sortColumn === col) sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+  else { sortColumn = col; sortDirection = 'asc'; }
   filteredData.sort((a, b) => {
     const va = a[col], vb = b[col];
-    // Coba parse sebagai angka dulu
     const na = parseFloat(String(va).replace(/[^\d.-]/g, ''));
     const nb = parseFloat(String(vb).replace(/[^\d.-]/g, ''));
-    if (!isNaN(na) && !isNaN(nb)) {
-      return sortDirection === 'asc' ? na - nb : nb - na;
-    }
-    const sa = String(va).toLowerCase();
-    const sb = String(vb).toLowerCase();
+    if (!isNaN(na) && !isNaN(nb)) return sortDirection === 'asc' ? na - nb : nb - na;
+    const sa = String(va).toLowerCase(), sb = String(vb).toLowerCase();
     if (sa < sb) return sortDirection === 'asc' ? -1 : 1;
     if (sa > sb) return sortDirection === 'asc' ? 1 : -1;
     return 0;
@@ -738,27 +594,17 @@ function handleSort(col) {
   renderTable();
 }
 
-/* ============================================================
-   APPLY FILTERS & SEARCH
-   ============================================================ */
 function applyFilters() {
-  const search = document.getElementById('searchInput').value.toLowerCase().trim();
-  const ultgSel = document.getElementById('filterULTG');
-  const giSel = document.getElementById('filterGI');
-  const statusSel = document.getElementById('filterStatus');
+  const ultgVal = document.getElementById('filterULTG').value;
+  const giVal = document.getElementById('filterGI').value;
+  const penyediaVal = document.getElementById('filterPenyedia').value;
+  const materialVal = document.getElementById('filterMaterial').value;
 
   filteredData = allData.filter(row => {
-    // Filter dropdown
-    if (ultgSel.value && row[ultgSel.dataset.column] !== ultgSel.value) return false;
-    if (giSel.value && row[giSel.dataset.column] !== giSel.value) return false;
-    if (statusSel.value && row[statusSel.dataset.column] !== statusSel.value) return false;
-    // Search di semua kolom
-    if (search) {
-      const match = Object.values(row).some(v =>
-        String(v).toLowerCase().includes(search)
-      );
-      if (!match) return false;
-    }
+    if (ultgVal && colULTG && row[colULTG] !== ultgVal) return false;
+    if (giVal && colGI && row[colGI] !== giVal) return false;
+    if (penyediaVal && colPenyedia && row[colPenyedia] !== penyediaVal) return false;
+    if (materialVal && colMaterial && row[colMaterial] !== materialVal) return false;
     return true;
   });
 
@@ -768,14 +614,32 @@ function applyFilters() {
   renderTable();
 }
 
-/* ============================================================
-   EVENT LISTENERS
-   ============================================================ */
 function attachListeners() {
-  document.getElementById('searchInput').addEventListener('input', debounce(applyFilters, 300));
-  document.getElementById('filterULTG').addEventListener('change', applyFilters);
-  document.getElementById('filterGI').addEventListener('change', applyFilters);
-  document.getElementById('filterStatus').addEventListener('change', applyFilters);
+  document.getElementById('filterULTG').addEventListener('change', () => {
+    document.getElementById('filterGI').value = '';
+    document.getElementById('filterPenyedia').value = '';
+    document.getElementById('filterMaterial').value = '';
+    populateGI(); populatePenyedia(); populateMaterial();
+    applyFilters();
+  });
+  document.getElementById('filterGI').addEventListener('change', () => {
+    document.getElementById('filterPenyedia').value = '';
+    document.getElementById('filterMaterial').value = '';
+    populatePenyedia(); populateMaterial();
+    applyFilters();
+  });
+  document.getElementById('filterPenyedia').addEventListener('change', () => {
+    document.getElementById('filterMaterial').value = '';
+    populateMaterial();
+    applyFilters();
+  });
+  document.getElementById('filterMaterial').addEventListener('change', applyFilters);
+
+  document.getElementById('resetFilters').addEventListener('click', () => {
+    ['filterULTG','filterGI','filterPenyedia','filterMaterial'].forEach(id => document.getElementById(id).value = '');
+    populateAllFilters();
+    applyFilters();
+  });
 
   document.getElementById('prevPage').addEventListener('click', () => {
     if (currentPage > 1) { currentPage--; renderTable(); }
@@ -784,42 +648,22 @@ function attachListeners() {
     const totalPages = Math.ceil(filteredData.length / ROWS_PER_PAGE);
     if (currentPage < totalPages) { currentPage++; renderTable(); }
   });
-
   document.getElementById('refreshBtn').addEventListener('click', loadData);
 }
 
-function debounce(fn, delay) {
-  let timer;
-  return (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn(...args), delay);
-  };
-}
-
-/* ============================================================
-   DARK MODE TOGGLE
-   ============================================================ */
 const themeToggle = document.getElementById('themeToggle');
-const savedTheme = localStorage.getItem('theme') || 'light';
-applyTheme(savedTheme);
-
+applyTheme(localStorage.getItem('theme') || 'light');
 themeToggle.addEventListener('click', () => {
-  const current = document.documentElement.getAttribute('data-theme') || 'light';
-  const next = current === 'dark' ? 'light' : 'dark';
+  const next = (document.documentElement.getAttribute('data-theme') || 'light') === 'dark' ? 'light' : 'dark';
   applyTheme(next);
   localStorage.setItem('theme', next);
-  // Re-render charts agar warna mengikuti tema
   if (allData.length) renderCharts();
 });
-
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   themeToggle.textContent = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
 }
 
-/* ============================================================
-   START
-   ============================================================ */
 loadData();
 </script>
 </body>
