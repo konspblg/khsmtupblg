@@ -673,7 +673,10 @@ function renderCharts() {
           align: 'top',
           color: textColor,
           font: { size: 10, weight: '600' },
-          formatter: (v) => (v > 0 ? v.toLocaleString('id-ID') : '')
+          formatter: (v) => {
+            const num = Number(v) || 0;
+            return num.toLocaleString('id-ID');
+          }
         }
       },
       scales: {
@@ -732,11 +735,11 @@ function renderCharts() {
           textStrokeColor: 'rgba(0,0,0,0.5)',
           textStrokeWidth: 2,
           formatter: (v) => {
-            if (!v || v === 0) return '';
-            const pct = pieTotal > 0 ? Math.round((v / pieTotal) * 100) : 0;
-            // Hide label kalau slice terlalu kecil (<4%) supaya tidak tabrakan
-            if (pct < 4) return '';
-            return `${v}\n(${pct}%)`;
+            const num = Number(v) || 0;
+            const pct = pieTotal > 0 ? Math.round((num / pieTotal) * 100) : 0;
+            // Slice sangat kecil: tampilkan angka saja (tanpa %), agar muat
+            if (pct < 4) return String(num);
+            return `${num}\n(${pct}%)`;
           },
           textAlign: 'center'
         }
