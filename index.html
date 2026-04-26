@@ -140,6 +140,42 @@
     display: flex; justify-content: space-between; align-items: center;
     flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;
   }
+
+  /* Container tombol kategori di atas chart (bar per material/penyedia, pie) */
+  .chart-categories {
+    display: flex; flex-wrap: wrap; gap: 0.4rem;
+    margin-bottom: 0.75rem;
+  }
+  .chart-categories:empty { display: none; }
+  .chart-cat-btn {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.4rem 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.18s;
+    white-space: nowrap;
+    line-height: 1;
+  }
+  .chart-cat-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+  /* Khusus untuk AHI: warna ikut level-nya */
+  .chart-cat-btn.ahi-critical { border-color: var(--danger); color: var(--danger); }
+  .chart-cat-btn.ahi-critical:hover { background: var(--danger); color: white; }
+  .chart-cat-btn.ahi-poor { border-color: #f97316; color: #f97316; }
+  .chart-cat-btn.ahi-poor:hover { background: #f97316; color: white; }
+  .chart-cat-btn.ahi-fair { border-color: #ca8a04; color: #ca8a04; }
+  .chart-cat-btn.ahi-fair:hover { background: #ca8a04; color: white; }
+  [data-theme="dark"] .chart-cat-btn.ahi-fair { color: #facc15; border-color: #facc15; }
+  [data-theme="dark"] .chart-cat-btn.ahi-fair:hover { background: #facc15; color: #1a1f36; }
+  .chart-cat-btn.ahi-good { border-color: var(--success); color: var(--success); }
+  .chart-cat-btn.ahi-good:hover { background: var(--success); color: white; }
   .pie-mode-toggle {
     display: inline-flex;
     background: var(--surface-2);
@@ -168,7 +204,6 @@
     box-shadow: var(--shadow);
   }
   .chart-wrapper { position: relative; height: 280px; width: 100%; }
-  .chart-wrapper canvas { cursor: pointer; }
 
   .table-card {
     background: var(--surface); border: 1px solid var(--border);
@@ -181,6 +216,27 @@
   }
   .table-header h3 { font-size: 0.95rem; font-weight: 600; }
   .table-info { font-size: 0.8rem; color: var(--text-muted); }
+  .table-header-right {
+    display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+  }
+  .btn-copy {
+    font-size: 0.78rem;
+    padding: 0.4rem 0.7rem;
+  }
+  .btn-copy.copied {
+    background: var(--success);
+    color: white;
+    border-color: var(--success);
+  }
+
+  /* Hyperlink di dalam tabel data */
+  td a.cell-link {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    word-break: break-all;
+  }
+  td a.cell-link:hover { color: var(--primary-hover); }
 
   /* Toggle filter tabel */
   .table-toggle-wrap {
@@ -385,6 +441,53 @@
   }
   .modal-close:hover { background: var(--surface-2); border-color: var(--danger); color: var(--danger); }
 
+  .modal-actions {
+    display: flex; gap: 0.5rem; align-items: center; flex-shrink: 0;
+  }
+
+  /* Toggle filter di dalam modal — pakai class .modal-toggle-btn dengan style sama */
+  .modal-toggle-wrap { padding: 0.65rem 1rem; }
+  .modal-toggle-btn {
+    flex: 1 1 auto;
+    min-width: 110px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+  }
+  .modal-toggle-btn:hover { background: var(--border); color: var(--text); }
+  .modal-toggle-btn .ttb-label { font-weight: 500; white-space: nowrap; }
+  .modal-toggle-btn .ttb-count {
+    background: var(--surface);
+    color: var(--text-muted);
+    border-radius: 999px;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    min-width: 26px;
+    text-align: center;
+  }
+  .modal-toggle-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    font-weight: 600;
+    box-shadow: var(--shadow);
+  }
+  .modal-toggle-btn.active .ttb-label { color: white; }
+  .modal-toggle-btn.active .ttb-count {
+    background: rgba(255,255,255,0.25);
+    color: white;
+  }
+
   .modal-body {
     flex: 1;
     min-height: 0;
@@ -545,6 +648,7 @@
             <button type="button" class="bar-mode-btn" data-mode="penyedia">Per Penyedia</button>
           </div>
         </div>
+        <div class="chart-categories" id="barCategories"></div>
         <div class="chart-wrapper"><canvas id="barChart"></canvas></div>
       </div>
       <div class="chart-card">
@@ -555,6 +659,7 @@
             <button type="button" class="pie-mode-btn" data-mode="ahi">AHI</button>
           </div>
         </div>
+        <div class="chart-categories" id="pieCategories"></div>
         <div class="chart-wrapper"><canvas id="pieChart"></canvas></div>
       </div>
     </div>
@@ -562,7 +667,10 @@
     <div class="table-card">
       <div class="table-header">
         <h3>📋 Data Detail</h3>
-        <div class="table-info" id="tableInfo">Menampilkan 0 data</div>
+        <div class="table-header-right">
+          <div class="table-info" id="tableInfo">Menampilkan 0 data</div>
+          <button class="btn btn-copy" id="copyTableBtn" title="Salin data ke clipboard">📋 Copy</button>
+        </div>
       </div>
       <!-- Toggle filter tabel: Total MTU / Sudah Terpasang / Belum Terpasang -->
       <div class="table-toggle-wrap">
@@ -601,7 +709,7 @@
 <!-- Scroll to top button -->
 <button class="scroll-top" id="scrollTopBtn" title="Kembali ke atas" aria-label="Kembali ke atas">↑</button>
 
-<!-- ===== Modal Drilldown — muncul saat chart diklik ===== -->
+<!-- ===== Modal Drilldown — muncul saat tombol kategori diklik ===== -->
 <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
   <div class="modal-sheet" id="modalSheet" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal-header">
@@ -609,7 +717,27 @@
         <h3 id="modalTitle">Detail</h3>
         <div class="modal-info" id="modalInfo">0 data</div>
       </div>
-      <button class="modal-close" id="modalCloseBtn" aria-label="Tutup">✕</button>
+      <div class="modal-actions">
+        <button class="btn btn-copy" id="modalCopyBtn" title="Salin data ke clipboard">📋 Copy</button>
+        <button class="modal-close" id="modalCloseBtn" aria-label="Tutup">✕</button>
+      </div>
+    </div>
+    <!-- Toggle filter modal: Total MTU / Sudah Terpasang / Belum Terpasang -->
+    <div class="table-toggle-wrap modal-toggle-wrap">
+      <div class="table-toggle">
+        <button type="button" class="modal-toggle-btn active" data-mode="total">
+          <span class="ttb-label">Total MTU</span>
+          <span class="ttb-count" id="modalCountTotal">0</span>
+        </button>
+        <button type="button" class="modal-toggle-btn" data-mode="terpasang">
+          <span class="ttb-label">Sudah Terpasang</span>
+          <span class="ttb-count" id="modalCountTerpasang">0</span>
+        </button>
+        <button type="button" class="modal-toggle-btn" data-mode="belum">
+          <span class="ttb-label">Belum Terpasang</span>
+          <span class="ttb-count" id="modalCountBelum">0</span>
+        </button>
+      </div>
     </div>
     <div class="modal-body">
       <div class="modal-table-scroll" id="modalTableScroll">
@@ -638,6 +766,16 @@ let barChart = null, pieChart = null;
 
 // Mode toggle untuk tabel data detail: 'total' | 'terpasang' | 'belum'
 let tableMode = 'total';
+
+// State modal: simpan konteks supaya saat toggle mode di modal,
+// kita bisa re-filter dari dataset yang sama
+let modalContext = {
+  baseData: [],   // data hasil filter kategori (tanpa mode terpasang/belum)
+  title: '',
+  mode: 'total'   // 'total' | 'terpasang' | 'belum'
+};
+
+let colLinkBA;
 
 let colULTG, colGI, colPenyedia, colMaterial, colPabrikan, colAHI;
 let colJumlah, colTerpasang, colBelum, colStatus, colUPT, colBay;
@@ -719,6 +857,7 @@ function detectImportantColumns() {
   colTerpasang = findColumn(['terpasang', 'sudah']);
   colBelum = findColumn(['belum terpasang', 'belum', 'sisa']);
   colStatus = findColumn(['status', 'keterangan']);
+  colLinkBA = findColumn(['link ba', 'link', 'url']);
 }
 
 function buildDisplayColumns() {
@@ -884,7 +1023,6 @@ function renderCharts() {
     options: {
       responsive: true, maintainAspectRatio: false,
       layout: { padding: { top: 24 } },
-      onClick: handleBarClick,
       plugins: {
         legend: {
           display: barLegend,
@@ -951,7 +1089,6 @@ function renderCharts() {
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      onClick: handlePieClick,
       plugins: {
         legend: { position: 'right', labels: { boxWidth: 12, padding: 8, font: { size: 11 } } },
         datalabels: {
@@ -973,6 +1110,132 @@ function renderCharts() {
     },
     plugins: [ChartDataLabels]
   });
+
+  // Render tombol kategori di atas chart sesuai mode aktif
+  renderBarCategoryButtons();
+  renderPieCategoryButtons();
+}
+
+/* ============================================================
+   CATEGORY BUTTONS — di atas chart, klik buka modal
+============================================================ */
+function renderBarCategoryButtons() {
+  const container = document.getElementById('barCategories');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const mode = window.barMode || 'status';
+  if (mode === 'status') return; // Mode Status tidak punya tombol kategori
+
+  const groupCol = (mode === 'material') ? colMaterial : colPenyedia;
+  if (!groupCol || !barChart) return;
+
+  const labels = barChart.data.labels;
+  labels.forEach(label => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'chart-cat-btn';
+    btn.textContent = label;
+    btn.addEventListener('click', () => {
+      const baseData = filteredData.filter(r => String(r[groupCol] || '') === String(label));
+      const modeLabel = (mode === 'material') ? 'Material' : 'Penyedia Jasa Pasang';
+      openModal(`Detail: ${modeLabel} — ${label}`, baseData);
+    });
+    container.appendChild(btn);
+  });
+}
+
+function renderPieCategoryButtons() {
+  const container = document.getElementById('pieCategories');
+  if (!container) return;
+  container.innerHTML = '';
+  if (!pieChart) return;
+
+  const mode = window.pieMode || 'status';
+  const groupCol = (mode === 'ahi') ? colAHI : colStatus;
+  if (!groupCol) return;
+
+  const labels = pieChart.data.labels;
+  labels.forEach(label => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'chart-cat-btn';
+
+    // Untuk mode AHI: tambah class warna sesuai level
+    if (mode === 'ahi') {
+      const lc = String(label).toLowerCase();
+      if (lc.includes('critical')) btn.classList.add('ahi-critical');
+      else if (lc.includes('poor')) btn.classList.add('ahi-poor');
+      else if (lc.includes('fair')) btn.classList.add('ahi-fair');
+      else if (lc.includes('good')) btn.classList.add('ahi-good');
+    }
+
+    btn.textContent = label;
+    btn.addEventListener('click', () => {
+      const baseData = filteredData.filter(r => String(r[groupCol] || '') === String(label));
+      const modeLabel = (mode === 'ahi') ? 'AHI' : 'Status Survey';
+      openModal(`Detail: ${modeLabel} — ${label}`, baseData);
+    });
+    container.appendChild(btn);
+  });
+}
+
+/* ============================================================
+   COPY DATA AS TSV (Tab-Separated Values).
+   TSV bisa langsung di-paste ke Excel/Google Sheets dan otomatis
+   terbagi per kolom. Lebih reliabel dari CSV karena data sering
+   mengandung koma.
+============================================================ */
+function copyDataAsTSV(data, btnEl) {
+  const cols = displayColumns;
+  const lines = [];
+  // Header
+  lines.push(cols.join('\t'));
+  // Body
+  data.forEach(row => {
+    const cells = cols.map(c => {
+      let v = row[c];
+      if (v === null || v === undefined) return '';
+      // Bersihkan tab & newline supaya tidak merusak format TSV
+      return String(v).replace(/\t/g, ' ').replace(/\r?\n/g, ' ');
+    });
+    lines.push(cells.join('\t'));
+  });
+  const tsv = lines.join('\n');
+
+  const showCopied = () => {
+    if (!btnEl) return;
+    const original = btnEl.innerHTML;
+    btnEl.classList.add('copied');
+    btnEl.innerHTML = '✓ Tersalin';
+    setTimeout(() => {
+      btnEl.classList.remove('copied');
+      btnEl.innerHTML = original;
+    }, 2000);
+  };
+
+  // Pakai Clipboard API kalau tersedia, fallback ke textarea trick
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(tsv).then(showCopied).catch(() => fallbackCopy(tsv, showCopied));
+  } else {
+    fallbackCopy(tsv, showCopied);
+  }
+}
+
+function fallbackCopy(text, onDone) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand('copy');
+    if (onDone) onDone();
+  } catch (e) {
+    console.error('Copy failed:', e);
+  }
+  document.body.removeChild(ta);
 }
 
 function countByColumn(col) {
@@ -1114,7 +1377,19 @@ function renderTable() {
     displayColumns.forEach(col => {
       const td = document.createElement('td');
       const val = row[col];
-      td.textContent = (val === '' || val === null || val === undefined) ? '-' : val;
+      // Kolom Link BA: jadikan hyperlink kalau isinya URL
+      if (col === colLinkBA && val && /^https?:\/\//i.test(String(val).trim())) {
+        const a = document.createElement('a');
+        a.href = String(val).trim();
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.className = 'cell-link';
+        a.textContent = 'Buka BA ↗';
+        a.addEventListener('click', (e) => e.stopPropagation()); // jangan trigger row click
+        td.appendChild(a);
+      } else {
+        td.textContent = (val === '' || val === null || val === undefined) ? '-' : val;
+      }
       tr.appendChild(td);
     });
     tbody.appendChild(tr);
@@ -1128,14 +1403,82 @@ function renderTable() {
   document.getElementById('nextPage').disabled = currentPage >= totalPages;
 }
 
+/* Parse berbagai format tanggal Indonesia/internasional ke timestamp.
+   Mendukung: "5 Jan 2025", "5 Januari 2025", "5/1/2025", "05-01-2025",
+   "2025-01-05", "5 Jan 2025 14:30", dll. Return null kalau gagal parse. */
+const ID_MONTHS = {
+  jan: 0, januari: 0, feb: 1, februari: 1, mar: 2, maret: 2,
+  apr: 3, april: 3, mei: 4, jun: 5, juni: 5, jul: 6, juli: 6,
+  agu: 7, agt: 7, ags: 7, agustus: 7, sep: 8, sept: 8, september: 8,
+  okt: 9, oct: 9, oktober: 9, nov: 10, november: 10, des: 11, dec: 11, desember: 11
+};
+function parseIndoDate(str) {
+  if (str === null || str === undefined) return null;
+  const s = String(str).trim();
+  if (!s) return null;
+
+  // Format "DD MMM YYYY" atau "DD MMMM YYYY" (Indonesia)
+  const reIndo = /^(\d{1,2})[\s-]+([A-Za-z]+)[\s-]+(\d{2,4})/;
+  const mIndo = s.match(reIndo);
+  if (mIndo) {
+    const d = parseInt(mIndo[1], 10);
+    const mKey = mIndo[2].toLowerCase().replace(/\./g, '');
+    const y = parseInt(mIndo[3], 10);
+    if (ID_MONTHS.hasOwnProperty(mKey)) {
+      const year = y < 100 ? 2000 + y : y;
+      const dt = new Date(year, ID_MONTHS[mKey], d);
+      if (!isNaN(dt.getTime())) return dt.getTime();
+    }
+  }
+
+  // Format "DD/MM/YYYY" atau "DD-MM-YYYY"
+  const reDmy = /^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/;
+  const mDmy = s.match(reDmy);
+  if (mDmy) {
+    const d = parseInt(mDmy[1], 10);
+    const mo = parseInt(mDmy[2], 10) - 1;
+    const y = parseInt(mDmy[3], 10);
+    const year = y < 100 ? 2000 + y : y;
+    const dt = new Date(year, mo, d);
+    if (!isNaN(dt.getTime())) return dt.getTime();
+  }
+
+  // Format ISO YYYY-MM-DD
+  const reIso = /^(\d{4})-(\d{1,2})-(\d{1,2})/;
+  const mIso = s.match(reIso);
+  if (mIso) {
+    const dt = new Date(parseInt(mIso[1], 10), parseInt(mIso[2], 10) - 1, parseInt(mIso[3], 10));
+    if (!isNaN(dt.getTime())) return dt.getTime();
+  }
+
+  // Fallback: coba Date.parse
+  const t = Date.parse(s);
+  return isNaN(t) ? null : t;
+}
+
 function handleSort(col) {
   if (sortColumn === col) sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
   else { sortColumn = col; sortDirection = 'asc'; }
   filteredData.sort((a, b) => {
     const va = a[col], vb = b[col];
+
+    // 1) Coba parse sebagai tanggal lengkap (dd-mm-yyyy)
+    const da = parseIndoDate(va);
+    const db = parseIndoDate(vb);
+    if (da !== null && db !== null) {
+      return sortDirection === 'asc' ? da - db : db - da;
+    }
+    if (da !== null) return sortDirection === 'asc' ? -1 : 1;
+    if (db !== null) return sortDirection === 'asc' ? 1 : -1;
+
+    // 2) Coba sebagai angka
     const na = parseFloat(String(va).replace(/[^\d.-]/g, ''));
     const nb = parseFloat(String(vb).replace(/[^\d.-]/g, ''));
-    if (!isNaN(na) && !isNaN(nb)) return sortDirection === 'asc' ? na - nb : nb - na;
+    if (!isNaN(na) && !isNaN(nb) && String(va).match(/\d/) && String(vb).match(/\d/)) {
+      return sortDirection === 'asc' ? na - nb : nb - na;
+    }
+
+    // 3) Fallback: string compare
     const sa = String(va).toLowerCase(), sb = String(vb).toLowerCase();
     if (sa < sb) return sortDirection === 'asc' ? -1 : 1;
     if (sa > sb) return sortDirection === 'asc' ? 1 : -1;
@@ -1249,6 +1592,14 @@ function attachListeners() {
       renderTable();
     });
   });
+
+  // Tombol Copy di card Data Detail
+  const copyBtn = document.getElementById('copyTableBtn');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', (e) => {
+      copyDataAsTSV(getTableData(), e.currentTarget);
+    });
+  }
 }
 
 /* Pakai native scroll browser — paling halus di HP */
@@ -1286,48 +1637,53 @@ function setupScrollTopButton() {
 
 /* ============================================================
    MODAL DRILLDOWN
-   Klik bar/pie → buka modal dengan data yang difilter sesuai
-   item yang diklik (atas filter aktif yang sudah ada).
+   Klik tombol kategori → buka modal dengan baseData yang difilter
+   sesuai kategori. Toggle mode di modal mempersempit lagi.
 ============================================================ */
-function getDrilldownData({ groupCol, groupValue, statusBarKey }) {
-  // Mulai dari filteredData (sudah ikut filter ULTG/GI/dst)
-  let data = [...filteredData];
-
-  if (statusBarKey) {
-    // Untuk bar mode "Status": filter berdasarkan kolom angka
-    if (statusBarKey === 'jumlah') {
-      // Semua data (yang punya jumlah > 0 atau sama saja) — tampilkan semua
-      // tidak perlu filter tambahan
-    } else if (statusBarKey === 'terpasang' && colTerpasang) {
-      data = data.filter(r => {
-        const v = parseFloat(String(r[colTerpasang] || '').replace(/[^\d.-]/g, ''));
-        return !isNaN(v) && v > 0;
-      });
-    } else if (statusBarKey === 'belum' && colBelum) {
-      data = data.filter(r => {
-        const v = parseFloat(String(r[colBelum] || '').replace(/[^\d.-]/g, ''));
-        return !isNaN(v) && v > 0;
-      });
-    }
-  } else if (groupCol && groupValue !== undefined) {
-    data = data.filter(r => String(r[groupCol] || '') === String(groupValue));
+function applyModalMode(baseData) {
+  if (modalContext.mode === 'terpasang' && colTerpasang) {
+    return baseData.filter(r => {
+      const v = parseFloat(String(r[colTerpasang] || '').replace(/[^\d.-]/g, ''));
+      return !isNaN(v) && v > 0;
+    });
   }
-  return data;
+  if (modalContext.mode === 'belum' && colBelum) {
+    return baseData.filter(r => {
+      const v = parseFloat(String(r[colBelum] || '').replace(/[^\d.-]/g, ''));
+      return !isNaN(v) && v > 0;
+    });
+  }
+  return baseData;
 }
 
-function openModal(title, data) {
-  const backdrop = document.getElementById('modalBackdrop');
-  const titleEl = document.getElementById('modalTitle');
-  const infoEl = document.getElementById('modalInfo');
+function sumColumnIn(data, col) {
+  if (!col) return 0;
+  return data.reduce((s, r) => {
+    const v = parseFloat(String(r[col] || '').replace(/[^\d.-]/g, ''));
+    return s + (isNaN(v) ? 0 : v);
+  }, 0);
+}
+
+function updateModalToggleCounts() {
+  const base = modalContext.baseData;
+  const sumJ = sumColumnIn(base, colJumlah);
+  const sumT = sumColumnIn(base, colTerpasang);
+  const sumB = sumColumnIn(base, colBelum);
+  document.getElementById('modalCountTotal').textContent = sumJ.toLocaleString('id-ID');
+  document.getElementById('modalCountTerpasang').textContent = sumT.toLocaleString('id-ID');
+  document.getElementById('modalCountBelum').textContent = sumB.toLocaleString('id-ID');
+}
+
+function renderModalTable() {
+  const data = applyModalMode(modalContext.baseData);
   const headerRow = document.getElementById('modalTableHeader');
   const tbody = document.getElementById('modalTableBody');
   const emptyEl = document.getElementById('modalEmpty');
   const scrollEl = document.getElementById('modalTableScroll');
 
-  titleEl.textContent = title;
-  infoEl.textContent = `${data.length} data`;
+  document.getElementById('modalInfo').textContent = `${data.length} data`;
 
-  // Bangun header (sekali saja per buka — clear dulu agar fresh kalau kolom berubah)
+  // Header
   headerRow.innerHTML = '';
   displayColumns.forEach(col => {
     const th = document.createElement('th');
@@ -1347,17 +1703,42 @@ function openModal(title, data) {
       displayColumns.forEach(col => {
         const td = document.createElement('td');
         const val = row[col];
-        td.textContent = (val === '' || val === null || val === undefined) ? '-' : val;
+        if (col === colLinkBA && val && /^https?:\/\//i.test(String(val).trim())) {
+          const a = document.createElement('a');
+          a.href = String(val).trim();
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer';
+          a.className = 'cell-link';
+          a.textContent = 'Buka BA ↗';
+          td.appendChild(a);
+        } else {
+          td.textContent = (val === '' || val === null || val === undefined) ? '-' : val;
+        }
         tr.appendChild(td);
       });
       tbody.appendChild(tr);
     });
   }
 
-  // Reset scroll ke awal supaya buka modal selalu lihat dari atas/kiri
+  updateModalToggleCounts();
   scrollEl.scrollTop = 0;
   scrollEl.scrollLeft = 0;
+}
 
+function openModal(title, baseData) {
+  modalContext.baseData = baseData;
+  modalContext.title = title;
+  modalContext.mode = 'total';
+
+  document.getElementById('modalTitle').textContent = title;
+
+  // Reset toggle ke "Total MTU"
+  document.querySelectorAll('.modal-toggle-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.mode === 'total'));
+
+  renderModalTable();
+
+  const backdrop = document.getElementById('modalBackdrop');
   document.body.classList.add('modal-open');
   backdrop.classList.add('visible');
   backdrop.setAttribute('aria-hidden', 'false');
@@ -1372,66 +1753,33 @@ function closeModal() {
 
 function setupModal() {
   const backdrop = document.getElementById('modalBackdrop');
-  const sheet = document.getElementById('modalSheet');
   const closeBtn = document.getElementById('modalCloseBtn');
 
-  // Klik backdrop di luar sheet → close
   backdrop.addEventListener('click', (e) => {
     if (e.target === backdrop) closeModal();
   });
-  // Klik tombol X → close
   closeBtn.addEventListener('click', closeModal);
-  // Esc → close
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && backdrop.classList.contains('visible')) closeModal();
   });
-}
 
-/* Bar chart click handler */
-function handleBarClick(evt, elements) {
-  if (!elements || !elements.length) return;
-  const idx = elements[0].index;
-  const datasetIdx = elements[0].datasetIndex;
-  const mode = window.barMode || 'status';
+  // Toggle mode di modal
+  document.querySelectorAll('.modal-toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const mode = btn.dataset.mode;
+      if (mode === modalContext.mode) return;
+      modalContext.mode = mode;
+      document.querySelectorAll('.modal-toggle-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.mode === mode));
+      renderModalTable();
+    });
+  });
 
-  if (mode === 'status') {
-    // 3 batang tunggal: idx 0=Jumlah, 1=Terpasang, 2=Belum
-    const keys = ['jumlah', 'terpasang', 'belum'];
-    const labels = ['Jumlah MTU', 'Sudah Terpasang', 'Belum Terpasang'];
-    const data = getDrilldownData({ statusBarKey: keys[idx] });
-    openModal(`Detail: ${labels[idx]}`, data);
-  } else {
-    // Mode material/penyedia: grouped 3 dataset
-    const groupCol = (mode === 'material') ? colMaterial : colPenyedia;
-    const label = barChart.data.labels[idx];
-    const datasetLabel = barChart.data.datasets[datasetIdx].label;
-    // Filter: berdasarkan kategori yang diklik + dataset (Jumlah/Terpasang/Belum)
-    let data = filteredData.filter(r => String(r[groupCol] || '') === String(label));
-    if (datasetLabel === 'Sudah Terpasang' && colTerpasang) {
-      data = data.filter(r => {
-        const v = parseFloat(String(r[colTerpasang] || '').replace(/[^\d.-]/g, ''));
-        return !isNaN(v) && v > 0;
-      });
-    } else if (datasetLabel === 'Belum Terpasang' && colBelum) {
-      data = data.filter(r => {
-        const v = parseFloat(String(r[colBelum] || '').replace(/[^\d.-]/g, ''));
-        return !isNaN(v) && v > 0;
-      });
-    }
-    openModal(`Detail: ${label} — ${datasetLabel}`, data);
-  }
-}
-
-/* Pie chart click handler */
-function handlePieClick(evt, elements) {
-  if (!elements || !elements.length) return;
-  const idx = elements[0].index;
-  const label = pieChart.data.labels[idx];
-  const mode = window.pieMode || 'status';
-  const groupCol = (mode === 'ahi') ? colAHI : (colStatus || colPenyedia || displayColumns[1] || displayColumns[0]);
-  const data = getDrilldownData({ groupCol, groupValue: label });
-  const modeLabel = (mode === 'ahi') ? 'AHI' : 'Status Survey';
-  openModal(`Detail: ${modeLabel} — ${label}`, data);
+  // Copy data modal
+  document.getElementById('modalCopyBtn').addEventListener('click', (e) => {
+    const data = applyModalMode(modalContext.baseData);
+    copyDataAsTSV(data, e.currentTarget);
+  });
 }
 applyTheme(localStorage.getItem('theme') || 'light');
 themeToggle.addEventListener('click', () => {
