@@ -141,24 +141,24 @@
     flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;
   }
 
-  /* Container tombol kategori di atas chart (bar per material/penyedia, pie) */
+  /* Container tombol kategori di bawah chart (bar per material/penyedia, pie) */
   .chart-categories {
     display: flex; flex-wrap: wrap; gap: 0.4rem;
-    margin-bottom: 0.75rem;
+    margin-top: 0.85rem;
   }
-  .chart-categories:empty { display: none; }
+  .chart-categories:empty { display: none; margin-top: 0; }
   .chart-cat-btn {
     background: var(--surface-2);
     border: 1px solid var(--border);
     color: var(--text);
-    padding: 0.4rem 0.75rem;
-    font-size: 0.78rem;
+    padding: 0.5rem 0.85rem;
+    font-size: 0.8rem;
     font-weight: 500;
-    border-radius: 999px;
+    border-radius: 8px;
     cursor: pointer;
     transition: all 0.18s;
     white-space: nowrap;
-    line-height: 1;
+    line-height: 1.2;
   }
   .chart-cat-btn:hover {
     background: var(--primary);
@@ -377,12 +377,12 @@
     -webkit-backdrop-filter: blur(4px);
     z-index: 300;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
-    padding: 5vh clamp(1rem, 4vw, 2rem) 10vh;
+    padding: clamp(1rem, 5vh, 4rem) clamp(1rem, 4vw, 2rem);
   }
   .modal-backdrop.visible {
     opacity: 1;
@@ -396,7 +396,9 @@
     border-radius: 16px;
     width: 100%;
     max-width: 1100px;
-    max-height: 100%;
+    /* Tinggi konsisten — modal selalu 85vh, tidak menyusut sesuai konten */
+    height: 85vh;
+    max-height: 85vh;
     display: flex;
     flex-direction: column;
     box-shadow: 0 -10px 40px rgba(0,0,0,0.25);
@@ -568,8 +570,8 @@
     .chart-wrapper { height: 240px; }
     .scroll-top { width: 44px; height: 44px; font-size: 1.25rem; }
     /* Modal di HP: padding lebih kecil agar konten lega */
-    .modal-backdrop { padding: 4vh 0.75rem 8vh; }
-    .modal-sheet { border-radius: 14px; }
+    .modal-backdrop { padding: 2vh 0.75rem; }
+    .modal-sheet { height: 90vh; max-height: 90vh; border-radius: 14px; }
     .modal-header { padding: 0.85rem 1rem; }
     .modal-table-scroll th, .modal-table-scroll td { padding: 0.6rem 0.75rem; font-size: 0.8rem; }
   }
@@ -648,8 +650,8 @@
             <button type="button" class="bar-mode-btn" data-mode="penyedia">Per Penyedia</button>
           </div>
         </div>
-        <div class="chart-categories" id="barCategories"></div>
         <div class="chart-wrapper"><canvas id="barChart"></canvas></div>
+        <div class="chart-categories" id="barCategories"></div>
       </div>
       <div class="chart-card">
         <div class="chart-card-header">
@@ -659,8 +661,8 @@
             <button type="button" class="pie-mode-btn" data-mode="ahi">AHI</button>
           </div>
         </div>
-        <div class="chart-categories" id="pieCategories"></div>
         <div class="chart-wrapper"><canvas id="pieChart"></canvas></div>
+        <div class="chart-categories" id="pieCategories"></div>
       </div>
     </div>
 
