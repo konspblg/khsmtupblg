@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Dashboard KHS MTU 2024 UPT Probolinggo</title>
+<title>Dashboard Monitoring KHS MTU 2024</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
 <style>
@@ -479,8 +479,7 @@
     <div class="title">
       <div class="logo">⚡</div>
       <div style="min-width:0;">
-        <h2>Dashboard Monitoring KHS MTU 2024</h2>
-        <h1>PT PLN (PERSERO) UPT Probolinggo</h1>
+        <h1>Dashboard Monitoring KHS MTU 2024</h1>
         <div class="subtitle">Realtime data dari Google Sheets</div>
       </div>
     </div>
@@ -1048,25 +1047,15 @@ function getTableData() {
   return filteredData;
 }
 
-/* Update angka di tiap toggle button (count baris jika mode itu dipilih) */
+/* Update angka di tiap toggle button.
+   Angka = SUM nilai kolom (Jumlah/Terpasang/Belum), konsisten dengan stat cards di atas */
 function updateTableToggleCounts() {
-  const total = filteredData.length;
-  let terpasang = 0, belum = 0;
-  if (colTerpasang) {
-    terpasang = filteredData.filter(r => {
-      const v = parseFloat(String(r[colTerpasang] || '').replace(/[^\d.-]/g, ''));
-      return !isNaN(v) && v > 0;
-    }).length;
-  }
-  if (colBelum) {
-    belum = filteredData.filter(r => {
-      const v = parseFloat(String(r[colBelum] || '').replace(/[^\d.-]/g, ''));
-      return !isNaN(v) && v > 0;
-    }).length;
-  }
-  document.getElementById('ttbCountTotal').textContent = total.toLocaleString('id-ID');
-  document.getElementById('ttbCountTerpasang').textContent = terpasang.toLocaleString('id-ID');
-  document.getElementById('ttbCountBelum').textContent = belum.toLocaleString('id-ID');
+  const sumJumlah = sumColumn(colJumlah);
+  const sumTerpasang = sumColumn(colTerpasang);
+  const sumBelum = sumColumn(colBelum);
+  document.getElementById('ttbCountTotal').textContent = sumJumlah.toLocaleString('id-ID');
+  document.getElementById('ttbCountTerpasang').textContent = sumTerpasang.toLocaleString('id-ID');
+  document.getElementById('ttbCountBelum').textContent = sumBelum.toLocaleString('id-ID');
 }
 
 function renderTable() {
