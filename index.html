@@ -168,6 +168,7 @@
     box-shadow: var(--shadow);
   }
   .chart-wrapper { position: relative; height: 280px; width: 100%; }
+  .chart-wrapper canvas { cursor: pointer; }
 
   .table-card {
     background: var(--surface); border: 1px solid var(--border);
@@ -252,6 +253,121 @@
 
   .hidden { display: none !important; }
 
+  /* ===== MODAL DRILLDOWN ===== */
+  body.modal-open { overflow: hidden; }
+
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 300;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    padding: 5vh clamp(1rem, 4vw, 2rem) 10vh;
+  }
+  .modal-backdrop.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  [data-theme="dark"] .modal-backdrop { background: rgba(0, 0, 0, 0.65); }
+
+  .modal-sheet {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 1100px;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.25);
+    transform: translateY(100vh);
+    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+    overflow: hidden;
+  }
+  .modal-backdrop.visible .modal-sheet { transform: translateY(0); }
+
+  .modal-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+    flex-shrink: 0;
+  }
+  .modal-title-wrap { min-width: 0; flex: 1; }
+  .modal-header h3 {
+    font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+    font-weight: 600;
+    word-break: break-word;
+    line-height: 1.3;
+  }
+  .modal-info {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+  }
+  .modal-close {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .modal-close:hover { background: var(--surface-2); border-color: var(--danger); color: var(--danger); }
+
+  .modal-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .modal-table-scroll {
+    flex: 1;
+    overflow-x: auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    will-change: scroll-position;
+    contain: paint;
+    overscroll-behavior: contain;
+  }
+  .modal-table-scroll table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .modal-table-scroll thead { background: var(--surface-2); }
+  .modal-table-scroll th {
+    padding: 0.7rem 0.9rem; text-align: left; font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap; font-size: 0.85rem;
+    position: sticky; top: 0; background: var(--surface-2); z-index: 1;
+  }
+  .modal-table-scroll td {
+    padding: 0.7rem 0.9rem; border-bottom: 1px solid var(--border);
+    white-space: nowrap; font-size: 0.85rem;
+    max-width: 320px; overflow: hidden; text-overflow: ellipsis;
+  }
+  .modal-table-scroll tbody tr:hover { background: var(--surface-2); }
+
+  .modal-empty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+
   /* ===== Scroll to Top button ===== */
   .scroll-top {
     position: fixed;
@@ -290,6 +406,11 @@
     .filters, .chart-card { padding: 0.85rem; }
     .chart-wrapper { height: 240px; }
     .scroll-top { width: 44px; height: 44px; font-size: 1.25rem; }
+    /* Modal di HP: padding lebih kecil agar konten lega */
+    .modal-backdrop { padding: 4vh 0.75rem 8vh; }
+    .modal-sheet { border-radius: 14px; }
+    .modal-header { padding: 0.85rem 1rem; }
+    .modal-table-scroll th, .modal-table-scroll td { padding: 0.6rem 0.75rem; font-size: 0.8rem; }
   }
 </style>
 </head>
@@ -404,6 +525,30 @@
 
 <!-- Scroll to top button -->
 <button class="scroll-top" id="scrollTopBtn" title="Kembali ke atas" aria-label="Kembali ke atas">↑</button>
+
+<!-- ===== Modal Drilldown — muncul saat chart diklik ===== -->
+<div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
+  <div class="modal-sheet" id="modalSheet" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <h3 id="modalTitle">Detail</h3>
+        <div class="modal-info" id="modalInfo">0 data</div>
+      </div>
+      <button class="modal-close" id="modalCloseBtn" aria-label="Tutup">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-table-scroll" id="modalTableScroll">
+        <table id="modalTable">
+          <thead><tr id="modalTableHeader"></tr></thead>
+          <tbody id="modalTableBody"></tbody>
+        </table>
+      </div>
+      <div class="modal-empty hidden" id="modalEmpty">
+        <p>Tidak ada data untuk kategori ini.</p>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 const SHEET_ID = '1n2rFEUf5O02qZuUqEK9WqID5nC9CGObcokTN2qZ8Sps';
@@ -520,6 +665,7 @@ function initDashboard() {
   attachListeners();
   setupAxisLockedScroll();
   setupScrollTopButton();
+  setupModal();
 }
 
 function getUniqueValues(data, col) {
@@ -660,6 +806,7 @@ function renderCharts() {
     options: {
       responsive: true, maintainAspectRatio: false,
       layout: { padding: { top: 24 } },
+      onClick: handleBarClick,
       plugins: {
         legend: {
           display: barLegend,
@@ -726,6 +873,7 @@ function renderCharts() {
     },
     options: {
       responsive: true, maintainAspectRatio: false,
+      onClick: handlePieClick,
       plugins: {
         legend: { position: 'right', labels: { boxWidth: 12, padding: 8, font: { size: 11 } } },
         datalabels: {
@@ -1008,7 +1156,155 @@ function setupScrollTopButton() {
   update();
 }
 
-const themeToggle = document.getElementById('themeToggle');
+/* ============================================================
+   MODAL DRILLDOWN
+   Klik bar/pie → buka modal dengan data yang difilter sesuai
+   item yang diklik (atas filter aktif yang sudah ada).
+============================================================ */
+function getDrilldownData({ groupCol, groupValue, statusBarKey }) {
+  // Mulai dari filteredData (sudah ikut filter ULTG/GI/dst)
+  let data = [...filteredData];
+
+  if (statusBarKey) {
+    // Untuk bar mode "Status": filter berdasarkan kolom angka
+    if (statusBarKey === 'jumlah') {
+      // Semua data (yang punya jumlah > 0 atau sama saja) — tampilkan semua
+      // tidak perlu filter tambahan
+    } else if (statusBarKey === 'terpasang' && colTerpasang) {
+      data = data.filter(r => {
+        const v = parseFloat(String(r[colTerpasang] || '').replace(/[^\d.-]/g, ''));
+        return !isNaN(v) && v > 0;
+      });
+    } else if (statusBarKey === 'belum' && colBelum) {
+      data = data.filter(r => {
+        const v = parseFloat(String(r[colBelum] || '').replace(/[^\d.-]/g, ''));
+        return !isNaN(v) && v > 0;
+      });
+    }
+  } else if (groupCol && groupValue !== undefined) {
+    data = data.filter(r => String(r[groupCol] || '') === String(groupValue));
+  }
+  return data;
+}
+
+function openModal(title, data) {
+  const backdrop = document.getElementById('modalBackdrop');
+  const titleEl = document.getElementById('modalTitle');
+  const infoEl = document.getElementById('modalInfo');
+  const headerRow = document.getElementById('modalTableHeader');
+  const tbody = document.getElementById('modalTableBody');
+  const emptyEl = document.getElementById('modalEmpty');
+  const scrollEl = document.getElementById('modalTableScroll');
+
+  titleEl.textContent = title;
+  infoEl.textContent = `${data.length} data`;
+
+  // Bangun header (sekali saja per buka — clear dulu agar fresh kalau kolom berubah)
+  headerRow.innerHTML = '';
+  displayColumns.forEach(col => {
+    const th = document.createElement('th');
+    th.textContent = col;
+    headerRow.appendChild(th);
+  });
+
+  tbody.innerHTML = '';
+  if (data.length === 0) {
+    emptyEl.classList.remove('hidden');
+    scrollEl.style.display = 'none';
+  } else {
+    emptyEl.classList.add('hidden');
+    scrollEl.style.display = '';
+    data.forEach(row => {
+      const tr = document.createElement('tr');
+      displayColumns.forEach(col => {
+        const td = document.createElement('td');
+        const val = row[col];
+        td.textContent = (val === '' || val === null || val === undefined) ? '-' : val;
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Reset scroll ke awal supaya buka modal selalu lihat dari atas/kiri
+  scrollEl.scrollTop = 0;
+  scrollEl.scrollLeft = 0;
+
+  document.body.classList.add('modal-open');
+  backdrop.classList.add('visible');
+  backdrop.setAttribute('aria-hidden', 'false');
+}
+
+function closeModal() {
+  const backdrop = document.getElementById('modalBackdrop');
+  backdrop.classList.remove('visible');
+  backdrop.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('modal-open');
+}
+
+function setupModal() {
+  const backdrop = document.getElementById('modalBackdrop');
+  const sheet = document.getElementById('modalSheet');
+  const closeBtn = document.getElementById('modalCloseBtn');
+
+  // Klik backdrop di luar sheet → close
+  backdrop.addEventListener('click', (e) => {
+    if (e.target === backdrop) closeModal();
+  });
+  // Klik tombol X → close
+  closeBtn.addEventListener('click', closeModal);
+  // Esc → close
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && backdrop.classList.contains('visible')) closeModal();
+  });
+}
+
+/* Bar chart click handler */
+function handleBarClick(evt, elements) {
+  if (!elements || !elements.length) return;
+  const idx = elements[0].index;
+  const datasetIdx = elements[0].datasetIndex;
+  const mode = window.barMode || 'status';
+
+  if (mode === 'status') {
+    // 3 batang tunggal: idx 0=Jumlah, 1=Terpasang, 2=Belum
+    const keys = ['jumlah', 'terpasang', 'belum'];
+    const labels = ['Jumlah MTU', 'Sudah Terpasang', 'Belum Terpasang'];
+    const data = getDrilldownData({ statusBarKey: keys[idx] });
+    openModal(`Detail: ${labels[idx]}`, data);
+  } else {
+    // Mode material/penyedia: grouped 3 dataset
+    const groupCol = (mode === 'material') ? colMaterial : colPenyedia;
+    const label = barChart.data.labels[idx];
+    const datasetLabel = barChart.data.datasets[datasetIdx].label;
+    // Filter: berdasarkan kategori yang diklik + dataset (Jumlah/Terpasang/Belum)
+    let data = filteredData.filter(r => String(r[groupCol] || '') === String(label));
+    if (datasetLabel === 'Sudah Terpasang' && colTerpasang) {
+      data = data.filter(r => {
+        const v = parseFloat(String(r[colTerpasang] || '').replace(/[^\d.-]/g, ''));
+        return !isNaN(v) && v > 0;
+      });
+    } else if (datasetLabel === 'Belum Terpasang' && colBelum) {
+      data = data.filter(r => {
+        const v = parseFloat(String(r[colBelum] || '').replace(/[^\d.-]/g, ''));
+        return !isNaN(v) && v > 0;
+      });
+    }
+    openModal(`Detail: ${label} — ${datasetLabel}`, data);
+  }
+}
+
+/* Pie chart click handler */
+function handlePieClick(evt, elements) {
+  if (!elements || !elements.length) return;
+  const idx = elements[0].index;
+  const label = pieChart.data.labels[idx];
+  const mode = window.pieMode || 'status';
+  const groupCol = (mode === 'ahi') ? colAHI : (colStatus || colPenyedia || displayColumns[1] || displayColumns[0]);
+  const data = getDrilldownData({ groupCol, groupValue: label });
+  const modeLabel = (mode === 'ahi') ? 'AHI' : 'Status Survey';
+  openModal(`Detail: ${modeLabel} — ${label}`, data);
+}
 applyTheme(localStorage.getItem('theme') || 'light');
 themeToggle.addEventListener('click', () => {
   const next = (document.documentElement.getAttribute('data-theme') || 'light') === 'dark' ? 'light' : 'dark';
