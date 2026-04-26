@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="id">
 <head>
 <meta charset="UTF-8" />
@@ -41,258 +40,257 @@
     min-height: 100vh; transition: background 0.3s, color 0.3s; line-height: 1.5;
   }
 
-header {
-background: var(–surface); border-bottom: 1px solid var(–border);
-padding: 1rem 1.25rem; box-shadow: var(–shadow);
-position: sticky; top: 0; z-index: 100; width: 100%;
-}
-.header-inner {
-width: 100%; max-width: 1240px; margin: 0 auto;
-display: flex; flex-direction: column; gap: 0.75rem;
-}
-.title { display: flex; align-items: center; gap: 0.6rem; min-width: 0; width: 100%; }
-.title h1 { font-size: clamp(1rem, 3.5vw, 1.25rem); font-weight: 600; line-height: 1.25; }
-.title .subtitle { font-size: clamp(0.7rem, 2vw, 0.8rem); color: var(–text-muted); }
-.logo {
-width: 40px; height: 40px; flex-shrink: 0;
-background: var(–primary); border-radius: 8px;
-display: flex; align-items: center; justify-content: center;
-color: white; font-weight: 700; font-size: 1.1rem;
-}
-.header-actions {
-display: flex; gap: 0.5rem; align-items: center;
-justify-content: flex-end; width: 100%; flex-wrap: wrap;
-}
-.btn {
-padding: 0.5rem 0.85rem; border: 1px solid var(–border); border-radius: 8px;
-background: var(–surface); color: var(–text); cursor: pointer;
-font-size: 0.85rem; transition: all 0.2s;
-display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap;
-}
-.btn:hover { background: var(–surface-2); border-color: var(–primary); }
-.btn-primary { background: var(–primary); color: white; border-color: var(–primary); }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  header {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 1rem 1.25rem; box-shadow: var(--shadow);
+    position: sticky; top: 0; z-index: 100; width: 100%;
+  }
+  .header-inner {
+    width: 100%; max-width: 1240px; margin: 0 auto;
+    display: flex; flex-direction: column; gap: 0.75rem;
+  }
+  .title { display: flex; align-items: center; gap: 0.6rem; min-width: 0; width: 100%; }
+  .title h1 { font-size: clamp(1rem, 3.5vw, 1.25rem); font-weight: 600; line-height: 1.25; }
+  .title .subtitle { font-size: clamp(0.7rem, 2vw, 0.8rem); color: var(--text-muted); }
+  .logo {
+    width: 40px; height: 40px; flex-shrink: 0;
+    background: var(--primary); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 1.1rem;
+  }
+  .header-actions {
+    display: flex; gap: 0.5rem; align-items: center;
+    justify-content: flex-end; width: 100%; flex-wrap: wrap;
+  }
+  .btn {
+    padding: 0.5rem 0.85rem; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--surface); color: var(--text); cursor: pointer;
+    font-size: 0.85rem; transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap;
+  }
+  .btn:hover { background: var(--surface-2); border-color: var(--primary); }
+  .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* ===== MAIN: padding fluid kiri-kanan ===== */
-main {
-width: 100%;
-max-width: 1240px;
-margin: 0 auto;
-/* padding kiri-kanan responsif: minimum 1.25rem di HP, sampai 3rem di desktop */
-padding: 1rem clamp(1.25rem, 6vw, 3rem);
-}
+  /* ===== MAIN: padding fluid kiri-kanan ===== */
+  main {
+    width: 100%;
+    max-width: 1240px;
+    margin: 0 auto;
+    /* padding kiri-kanan responsif: minimum 1.25rem di HP, sampai 3rem di desktop */
+    padding: 1rem clamp(1.25rem, 6vw, 3rem);
+  }
 
-.stats-grid {
-display: grid;
-grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
-gap: 0.75rem; margin-bottom: 1.25rem; width: 100%;
-}
-.stat-card {
-background: var(–surface); border: 1px solid var(–border);
-border-radius: 12px; padding: 1rem 1.25rem; box-shadow: var(–shadow);
-min-width: 0;
-}
-.stat-card .label {
-font-size: 0.75rem; color: var(–text-muted);
-text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;
-word-break: break-word;
-}
-.stat-card .value { font-size: clamp(1.4rem, 4vw, 1.75rem); font-weight: 700; word-break: break-word; }
-.stat-card.primary { border-left: 4px solid var(–primary); }
-.stat-card.success { border-left: 4px solid var(–success); }
-.stat-card.warning { border-left: 4px solid var(–warning); }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+    gap: 0.75rem; margin-bottom: 1.25rem; width: 100%;
+  }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem 1.25rem; box-shadow: var(--shadow);
+    min-width: 0;
+  }
+  .stat-card .label {
+    font-size: 0.75rem; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;
+    word-break: break-word;
+  }
+  .stat-card .value { font-size: clamp(1.4rem, 4vw, 1.75rem); font-weight: 700; word-break: break-word; }
+  .stat-card.primary { border-left: 4px solid var(--primary); }
+  .stat-card.success { border-left: 4px solid var(--success); }
+  .stat-card.warning { border-left: 4px solid var(--warning); }
 
-.filters {
-background: var(–surface); border: 1px solid var(–border);
-border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem;
-box-shadow: var(–shadow);
-display: grid;
-grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
-gap: 0.75rem; width: 100%;
-}
-.filter-group { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
-.filter-group label {
-font-size: 0.7rem; color: var(–text-muted);
-text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;
-}
-.filter-group select {
-width: 100%; padding: 0.55rem 0.75rem; border: 1px solid var(–border);
-border-radius: 8px; background: var(–surface); color: var(–text);
-font-size: 0.9rem;
-}
-.filter-group select:focus { outline: none; border-color: var(–primary); }
-.filter-group select:disabled { opacity: 0.5; cursor: not-allowed; }
-/* Opsi default (“Semua ULTG”, dll) tampil bold */
-.filter-group select option.default-opt { font-weight: 700; }
-.filter-reset { grid-column: 1 / -1; display: flex; justify-content: flex-end; }
+  .filters {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem;
+    box-shadow: var(--shadow);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+    gap: 0.75rem; width: 100%;
+  }
+  .filter-group { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
+  .filter-group label {
+    font-size: 0.7rem; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;
+  }
+  .filter-group select {
+    width: 100%; padding: 0.55rem 0.75rem; border: 1px solid var(--border);
+    border-radius: 8px; background: var(--surface); color: var(--text);
+    font-size: 0.9rem;
+  }
+  .filter-group select:focus { outline: none; border-color: var(--primary); }
+  .filter-group select:disabled { opacity: 0.5; cursor: not-allowed; }
+  /* Opsi default ("Semua ULTG", dll) tampil bold */
+  .filter-group select option.default-opt { font-weight: 700; }
+  .filter-reset { grid-column: 1 / -1; display: flex; justify-content: flex-end; }
 
-.charts-grid {
-display: grid;
-grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
-gap: 1rem; margin-bottom: 1.25rem; width: 100%;
-}
-.chart-card {
-background: var(–surface); border: 1px solid var(–border);
-border-radius: 12px; padding: 1rem; box-shadow: var(–shadow); min-width: 0;
-}
-.chart-card h3 { font-size: 0.95rem; font-weight: 600; }
-.chart-card-header {
-display: flex; justify-content: space-between; align-items: center;
-flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;
-}
-.pie-mode-toggle {
-display: inline-flex;
-background: var(–surface-2);
-border: 1px solid var(–border);
-border-radius: 8px;
-padding: 2px;
-gap: 2px;
-}
-.pie-mode-btn, .bar-mode-btn {
-background: transparent;
-border: none;
-padding: 0.35rem 0.7rem;
-font-size: 0.78rem;
-font-weight: 500;
-color: var(–text-muted);
-cursor: pointer;
-border-radius: 6px;
-transition: all 0.18s;
-white-space: nowrap;
-}
-.pie-mode-btn:hover, .bar-mode-btn:hover { color: var(–text); }
-.pie-mode-btn.active, .bar-mode-btn.active {
-background: var(–surface);
-color: var(–primary);
-font-weight: 600;
-box-shadow: var(–shadow);
-}
-.chart-wrapper { position: relative; height: 280px; width: 100%; }
+  .charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    gap: 1rem; margin-bottom: 1.25rem; width: 100%;
+  }
+  .chart-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem; box-shadow: var(--shadow); min-width: 0;
+  }
+  .chart-card h3 { font-size: 0.95rem; font-weight: 600; }
+  .chart-card-header {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;
+  }
+  .pie-mode-toggle {
+    display: inline-flex;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 2px;
+    gap: 2px;
+  }
+  .pie-mode-btn, .bar-mode-btn {
+    background: transparent;
+    border: none;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.18s;
+    white-space: nowrap;
+  }
+  .pie-mode-btn:hover, .bar-mode-btn:hover { color: var(--text); }
+  .pie-mode-btn.active, .bar-mode-btn.active {
+    background: var(--surface);
+    color: var(--primary);
+    font-weight: 600;
+    box-shadow: var(--shadow);
+  }
+  .chart-wrapper { position: relative; height: 280px; width: 100%; }
 
-.table-card {
-background: var(–surface); border: 1px solid var(–border);
-border-radius: 12px; box-shadow: var(–shadow); overflow: hidden; width: 100%;
-}
-.table-header {
-padding: 0.85rem 1rem; border-bottom: 1px solid var(–border);
-display: flex; justify-content: space-between; align-items: center;
-flex-wrap: wrap; gap: 0.5rem;
-}
-.table-header h3 { font-size: 0.95rem; font-weight: 600; }
-.table-info { font-size: 0.8rem; color: var(–text-muted); }
+  .table-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; width: 100%;
+  }
+  .table-header {
+    padding: 0.85rem 1rem; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 0.5rem;
+  }
+  .table-header h3 { font-size: 0.95rem; font-weight: 600; }
+  .table-info { font-size: 0.8rem; color: var(--text-muted); }
 
-.table-scroll {
-overflow-x: auto; overflow-y: auto;
-max-height: 600px;
--webkit-overflow-scrolling: touch;
-/* Hint browser untuk optimasi scroll */
-will-change: scroll-position;
-contain: paint;
-/* Scroll snap ringan opsional, biar geser lebih “kunci” */
-overscroll-behavior: contain;
-}
-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-thead { background: var(–surface-2); }
-th {
-padding: 0.7rem 0.9rem; text-align: left; font-weight: 600;
-border-bottom: 1px solid var(–border); cursor: pointer;
-user-select: none; white-space: nowrap;
-position: sticky; top: 0; background: var(–surface-2); z-index: 1;
-font-size: 0.85rem;
-}
-th:hover { background: var(–border); }
-th .sort-icon { opacity: 0.4; margin-left: 0.25rem; font-size: 0.7rem; }
-th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(–primary); }
-td {
-padding: 0.7rem 0.9rem;
-border-bottom: 1px solid var(–border);
-white-space: nowrap;
-font-size: 0.85rem;
-/* Cegah auto-resize teks panjang di iOS/mobile */
-max-width: 320px;
-overflow: hidden;
-text-overflow: ellipsis;
-}
-tbody tr { transition: background 0.15s; cursor: pointer; }
-tbody tr:hover { background: var(–surface-2); }
-tbody tr.highlight-danger { background: rgba(220, 38, 38, 0.08); }
-tbody tr.highlight-warning { background: rgba(245, 158, 11, 0.08); }
+  .table-scroll {
+    overflow-x: auto; overflow-y: auto;
+    max-height: 600px;
+    -webkit-overflow-scrolling: touch;
+    /* Hint browser untuk optimasi scroll */
+    will-change: scroll-position;
+    contain: paint;
+    /* Scroll snap ringan opsional, biar geser lebih "kunci" */
+    overscroll-behavior: contain;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  thead { background: var(--surface-2); }
+  th {
+    padding: 0.7rem 0.9rem; text-align: left; font-weight: 600;
+    border-bottom: 1px solid var(--border); cursor: pointer;
+    user-select: none; white-space: nowrap;
+    position: sticky; top: 0; background: var(--surface-2); z-index: 1;
+    font-size: 0.85rem;
+  }
+  th:hover { background: var(--border); }
+  th .sort-icon { opacity: 0.4; margin-left: 0.25rem; font-size: 0.7rem; }
+  th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--primary); }
+  td {
+    padding: 0.7rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    font-size: 0.85rem;
+    /* Cegah auto-resize teks panjang di iOS/mobile */
+    max-width: 320px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  tbody tr { transition: background 0.15s; cursor: pointer; }
+  tbody tr:hover { background: var(--surface-2); }
+  tbody tr.highlight-danger { background: rgba(220, 38, 38, 0.08); }
+  tbody tr.highlight-warning { background: rgba(245, 158, 11, 0.08); }
 
-tbody tr.row-selected,
-tbody tr.row-selected:hover,
-tbody tr.row-selected.highlight-warning,
-tbody tr.row-selected.highlight-danger {
-background: var(–row-selected-bg) !important;
-color: var(–row-selected-text);
-box-shadow: inset 4px 0 0 var(–row-selected-border);
-font-weight: 500;
-}
+  tbody tr.row-selected,
+  tbody tr.row-selected:hover,
+  tbody tr.row-selected.highlight-warning,
+  tbody tr.row-selected.highlight-danger {
+    background: var(--row-selected-bg) !important;
+    color: var(--row-selected-text);
+    box-shadow: inset 4px 0 0 var(--row-selected-border);
+    font-weight: 500;
+  }
 
-.loading, .error {
-background: var(–surface); border: 1px solid var(–border);
-border-radius: 12px; padding: 2.5rem 1.25rem; text-align: center;
-box-shadow: var(–shadow); width: 100%;
-}
-.spinner {
-border: 4px solid var(–border); border-top: 4px solid var(–primary);
-border-radius: 50%; width: 48px; height: 48px;
-animation: spin 1s linear infinite; margin: 0 auto 1rem;
-}
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-.error h3 { color: var(–danger); margin-bottom: 0.5rem; }
-.error p { color: var(–text-muted); margin-bottom: 1rem; word-break: break-word; }
+  .loading, .error {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 2.5rem 1.25rem; text-align: center;
+    box-shadow: var(--shadow); width: 100%;
+  }
+  .spinner {
+    border: 4px solid var(--border); border-top: 4px solid var(--primary);
+    border-radius: 50%; width: 48px; height: 48px;
+    animation: spin 1s linear infinite; margin: 0 auto 1rem;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  .error h3 { color: var(--danger); margin-bottom: 0.5rem; }
+  .error p { color: var(--text-muted); margin-bottom: 1rem; word-break: break-word; }
 
-.pagination {
-padding: 0.85rem 1rem; border-top: 1px solid var(–border);
-display: flex; justify-content: space-between; align-items: center;
-flex-wrap: wrap; gap: 0.5rem;
-}
-.pagination-info { font-size: 0.8rem; color: var(–text-muted); }
-.pagination-buttons { display: flex; gap: 0.4rem; }
+  .pagination {
+    padding: 0.85rem 1rem; border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 0.5rem;
+  }
+  .pagination-info { font-size: 0.8rem; color: var(--text-muted); }
+  .pagination-buttons { display: flex; gap: 0.4rem; }
 
-.hidden { display: none !important; }
+  .hidden { display: none !important; }
 
-/* ===== Scroll to Top button ===== */
-.scroll-top {
-position: fixed;
-bottom: clamp(1rem, 3vw, 1.75rem);
-right: clamp(1rem, 3vw, 1.75rem);
-width: 48px; height: 48px;
-border-radius: 50%;
-background: var(–primary);
-color: white;
-border: none;
-cursor: pointer;
-box-shadow: var(–shadow-lg);
-display: flex; align-items: center; justify-content: center;
-font-size: 1.4rem;
-opacity: 0;
-pointer-events: none;
-transform: translateY(12px);
-transition: opacity 0.25s ease, transform 0.25s ease, background 0.2s;
-z-index: 200;
-}
-.scroll-top.visible {
-opacity: 1;
-pointer-events: auto;
-transform: translateY(0);
-}
-.scroll-top:hover { background: var(–primary-hover); }
-.scroll-top:active { transform: translateY(0) scale(0.95); }
+  /* ===== Scroll to Top button ===== */
+  .scroll-top {
+    position: fixed;
+    bottom: clamp(1rem, 3vw, 1.75rem);
+    right: clamp(1rem, 3vw, 1.75rem);
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(12px);
+    transition: opacity 0.25s ease, transform 0.25s ease, background 0.2s;
+    z-index: 200;
+  }
+  .scroll-top.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+  .scroll-top:hover { background: var(--primary-hover); }
+  .scroll-top:active { transform: translateY(0) scale(0.95); }
 
-@media (max-width: 480px) {
-main { padding: 0.75rem 1.25rem; }
-header { padding: 0.85rem 1.25rem; }
-.title h1 { font-size: 1rem; }
-.logo { width: 36px; height: 36px; font-size: 1rem; }
-.btn { padding: 0.45rem 0.65rem; font-size: 0.8rem; }
-.stat-card { padding: 0.85rem 1rem; }
-.filters, .chart-card { padding: 0.85rem; }
-.chart-wrapper { height: 240px; }
-.scroll-top { width: 44px; height: 44px; font-size: 1.25rem; }
-}
+  @media (max-width: 480px) {
+    main { padding: 0.75rem 1.25rem; }
+    header { padding: 0.85rem 1.25rem; }
+    .title h1 { font-size: 1rem; }
+    .logo { width: 36px; height: 36px; font-size: 1rem; }
+    .btn { padding: 0.45rem 0.65rem; font-size: 0.8rem; }
+    .stat-card { padding: 0.85rem 1rem; }
+    .filters, .chart-card { padding: 0.85rem; }
+    .chart-wrapper { height: 240px; }
+    .scroll-top { width: 44px; height: 44px; font-size: 1.25rem; }
+  }
 </style>
-
 </head>
 <body>
 
@@ -327,87 +325,83 @@ header { padding: 0.85rem 1.25rem; }
   <div id="dashboard" class="hidden">
     <div class="stats-grid" id="statsGrid"></div>
 
-```
-<div class="filters">
-  <div class="filter-group">
-    <label for="filterULTG">ULTG</label>
-    <select id="filterULTG"><option value="" class="default-opt">Semua ULTG</option></select>
-  </div>
-  <div class="filter-group">
-    <label for="filterGI">Gardu Induk</label>
-    <select id="filterGI"><option value="" class="default-opt">Semua GI</option></select>
-  </div>
-  <div class="filter-group">
-    <label for="filterPenyedia">Penyedia Jasa Pasang</label>
-    <select id="filterPenyedia"><option value="" class="default-opt">Semua Penyedia</option></select>
-  </div>
-  <div class="filter-group">
-    <label for="filterMaterial">Material</label>
-    <select id="filterMaterial"><option value="" class="default-opt">Semua Material</option></select>
-  </div>
-  <div class="filter-group">
-    <label for="filterPabrikan">Pabrikan</label>
-    <select id="filterPabrikan"><option value="" class="default-opt">Semua Pabrikan</option></select>
-  </div>
-  <div class="filter-group">
-    <label for="filterAHI">AHI</label>
-    <select id="filterAHI"><option value="" class="default-opt">Semua AHI</option></select>
-  </div>
-  <div class="filter-reset">
-    <button class="btn" id="resetFilters">↺ Reset Filter</button>
-  </div>
-</div>
-
-<div class="charts-grid">
-  <div class="chart-card">
-    <div class="chart-card-header">
-      <h3>📊 Jumlah</h3>
-      <div class="pie-mode-toggle">
-        <button type="button" class="bar-mode-btn active" data-mode="status">Status</button>
-        <button type="button" class="bar-mode-btn" data-mode="material">Per Material</button>
-        <button type="button" class="bar-mode-btn" data-mode="penyedia">Per Penyedia</button>
+    <div class="filters">
+      <div class="filter-group">
+        <label for="filterULTG">ULTG</label>
+        <select id="filterULTG"><option value="" class="default-opt">Semua ULTG</option></select>
+      </div>
+      <div class="filter-group">
+        <label for="filterGI">Gardu Induk</label>
+        <select id="filterGI"><option value="" class="default-opt">Semua GI</option></select>
+      </div>
+      <div class="filter-group">
+        <label for="filterPenyedia">Penyedia Jasa Pasang</label>
+        <select id="filterPenyedia"><option value="" class="default-opt">Semua Penyedia</option></select>
+      </div>
+      <div class="filter-group">
+        <label for="filterMaterial">Material</label>
+        <select id="filterMaterial"><option value="" class="default-opt">Semua Material</option></select>
+      </div>
+      <div class="filter-group">
+        <label for="filterPabrikan">Pabrikan</label>
+        <select id="filterPabrikan"><option value="" class="default-opt">Semua Pabrikan</option></select>
+      </div>
+      <div class="filter-group">
+        <label for="filterAHI">AHI</label>
+        <select id="filterAHI"><option value="" class="default-opt">Semua AHI</option></select>
+      </div>
+      <div class="filter-reset">
+        <button class="btn" id="resetFilters">↺ Reset Filter</button>
       </div>
     </div>
-    <div class="chart-wrapper"><canvas id="barChart"></canvas></div>
-  </div>
-  <div class="chart-card">
-    <div class="chart-card-header">
-      <h3>🥧 Proporsi</h3>
-      <div class="pie-mode-toggle">
-        <button type="button" class="pie-mode-btn active" data-mode="status">Status Survey</button>
-        <button type="button" class="pie-mode-btn" data-mode="ahi">AHI</button>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <h3>📊 Jumlah</h3>
+          <div class="pie-mode-toggle">
+            <button type="button" class="bar-mode-btn active" data-mode="status">Status</button>
+            <button type="button" class="bar-mode-btn" data-mode="material">Per Material</button>
+            <button type="button" class="bar-mode-btn" data-mode="penyedia">Per Penyedia</button>
+          </div>
+        </div>
+        <div class="chart-wrapper"><canvas id="barChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <h3>🥧 Proporsi</h3>
+          <div class="pie-mode-toggle">
+            <button type="button" class="pie-mode-btn active" data-mode="status">Status Survey</button>
+            <button type="button" class="pie-mode-btn" data-mode="ahi">AHI</button>
+          </div>
+        </div>
+        <div class="chart-wrapper"><canvas id="pieChart"></canvas></div>
       </div>
     </div>
-    <div class="chart-wrapper"><canvas id="pieChart"></canvas></div>
-  </div>
-</div>
 
-<div class="table-card">
-  <div class="table-header">
-    <h3>📋 Data Detail</h3>
-    <div class="table-info" id="tableInfo">Menampilkan 0 data</div>
-  </div>
-  <div class="table-scroll" id="tableScroll">
-    <table id="dataTable">
-      <thead><tr id="tableHeaderRow"></tr></thead>
-      <tbody id="tableBody"></tbody>
-    </table>
-  </div>
-  <div class="pagination">
-    <div class="pagination-info" id="paginationInfo"></div>
-    <div class="pagination-buttons">
-      <button class="btn" id="prevPage">← Prev</button>
-      <button class="btn" id="nextPage">Next →</button>
+    <div class="table-card">
+      <div class="table-header">
+        <h3>📋 Data Detail</h3>
+        <div class="table-info" id="tableInfo">Menampilkan 0 data</div>
+      </div>
+      <div class="table-scroll" id="tableScroll">
+        <table id="dataTable">
+          <thead><tr id="tableHeaderRow"></tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <div class="pagination-info" id="paginationInfo"></div>
+        <div class="pagination-buttons">
+          <button class="btn" id="prevPage">← Prev</button>
+          <button class="btn" id="nextPage">Next →</button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
-```
-
   </div>
 </main>
 
 <!-- Scroll to top button -->
-
 <button class="scroll-top" id="scrollTopBtn" title="Kembali ke atas" aria-label="Kembali ke atas">↑</button>
 
 <script>
@@ -967,6 +961,5 @@ function applyTheme(theme) {
 
 loadData();
 </script>
-
 </body>
 </html>
