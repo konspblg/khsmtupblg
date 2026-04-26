@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Dashboard Monitoring KHS MTU 2024</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
 <style>
   :root {
     --bg: #f5f7fb; --surface: #ffffff; --surface-2: #f0f2f7;
@@ -410,6 +411,12 @@ const GID = '1351233736';
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}`;
 const ROWS_PER_PAGE = 25;
 
+// Cegah plugin datalabels jadi global default — kita aktifkan per-chart saja
+if (typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined') {
+  Chart.register(ChartDataLabels);
+  Chart.defaults.set('plugins.datalabels', { display: false });
+}
+
 let allData = [], filteredData = [], columns = [];
 let displayColumns = [];
 let currentPage = 1, sortColumn = null, sortDirection = 'asc';
@@ -621,12 +628,10 @@ function renderCharts() {
 
   // ===== BAR CHART: 3 mode =====
   const barMode = window.barMode || 'status';
-  let barLabels, barDatasets, barTitle;
+  let barLabels, barDatasets, barLegend = false;
 
   if (barMode === 'status') {
-    // Mode 1: stacked/grouped — Total MTU, Sudah Terpasang, Belum Terpasang
-    // Pakai 1 label tunggal "Total" agar muncul 3 bar berdampingan
-    barTitle = 'Status Pemasangan';
+    // Mode 1: 3 batang berdampingan — Total Jumlah, Terpasang, Belum
     const totalJumlah = sumColumn(colJumlah);
     const totalPasang = sumColumn(colTerpasang);
     const totalBelum = sumColumn(colBelum);
@@ -637,28 +642,21 @@ function renderCharts() {
       backgroundColor: ['#3b82f6', '#22c55e', '#f59e0b'],
       borderRadius: 6
     }];
-  } else if (barMode === 'material') {
-    // Mode 2: SUM jumlah per material
-    barTitle = 'Jumlah per Material';
-    const sums = sumByGroup(colMaterial, colJumlah);
-    barLabels = Object.keys(sums);
-    barDatasets = [{
-      label: 'Jumlah',
-      data: Object.values(sums),
-      backgroundColor: '#3b82f6',
-      borderRadius: 6
-    }];
   } else {
-    // Mode 3: SUM jumlah per penyedia jasa pasang
-    barTitle = 'Jumlah per Penyedia';
-    const sums = sumByGroup(colPenyedia, colJumlah);
-    barLabels = Object.keys(sums);
-    barDatasets = [{
-      label: 'Jumlah',
-      data: Object.values(sums),
-      backgroundColor: '#8b5cf6',
-      borderRadius: 6
-    }];
+    // Mode 2 & 3: GROUPED bar — per kategori, 3 batang (Jumlah / Terpasang / Belum)
+    const groupCol = (barMode === 'material') ? colMaterial : colPenyedia;
+    const grouped = sumMultiByGroup(groupCol, [
+      { label: 'Jumlah MTU', col: colJumlah },
+      { label: 'Sudah Terpasang', col: colTerpasang },
+      { label: 'Belum Terpasang', col: colBelum }
+    ]);
+    barLabels = grouped.labels;
+    barDatasets = [
+      { label: 'Jumlah MTU', data: grouped.series[0].data, backgroundColor: '#3b82f6', borderRadius: 4 },
+      { label: 'Sudah Terpasang', data: grouped.series[1].data, backgroundColor: '#22c55e', borderRadius: 4 },
+      { label: 'Belum Terpasang', data: grouped.series[2].data, backgroundColor: '#f59e0b', borderRadius: 4 }
+    ];
+    barLegend = true;
   }
 
   if (barChart) barChart.destroy();
@@ -667,9 +665,28 @@ function renderCharts() {
     data: { labels: barLabels, datasets: barDatasets },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, title: { display: false } },
-      scales: { y: { beginAtZero: true, grid: { color: gridColor } }, x: { grid: { display: false } } }
-    }
+      layout: { padding: { top: 24 } },
+      plugins: {
+        legend: {
+          display: barLegend,
+          position: 'top',
+          labels: { boxWidth: 12, padding: 8, font: { size: 11 } }
+        },
+        title: { display: false },
+        datalabels: {
+          anchor: 'end',
+          align: 'top',
+          color: textColor,
+          font: { size: 10, weight: '600' },
+          formatter: (v) => (v > 0 ? v.toLocaleString('id-ID') : '')
+        }
+      },
+      scales: {
+        y: { beginAtZero: true, grid: { color: gridColor }, ticks: { precision: 0 } },
+        x: { grid: { display: false }, ticks: { maxRotation: 45, minRotation: 0, autoSkip: false, font: { size: 10 } } }
+      }
+    },
+    plugins: [ChartDataLabels]
   });
 
   // Pie chart: tergantung mode aktif (status survey / AHI)
@@ -696,20 +713,40 @@ function renderCharts() {
   }
 
   if (pieChart) pieChart.destroy();
+  const pieValues = Object.values(pieData);
+  const pieTotal = pieValues.reduce((a, b) => a + b, 0);
+
   pieChart = new Chart(document.getElementById('pieChart').getContext('2d'), {
     type: 'doughnut',
     data: {
       labels: Object.keys(pieData),
       datasets: [{
-        data: Object.values(pieData),
+        data: pieValues,
         backgroundColor: pieColors,
         borderWidth: 2, borderColor: isDark ? '#1e293b' : '#fff'
       }]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 8, font: { size: 11 } } } }
-    }
+      plugins: {
+        legend: { position: 'right', labels: { boxWidth: 12, padding: 8, font: { size: 11 } } },
+        datalabels: {
+          color: '#fff',
+          font: { size: 11, weight: '700' },
+          textStrokeColor: 'rgba(0,0,0,0.5)',
+          textStrokeWidth: 2,
+          formatter: (v) => {
+            if (!v || v === 0) return '';
+            const pct = pieTotal > 0 ? Math.round((v / pieTotal) * 100) : 0;
+            // Hide label kalau slice terlalu kecil (<4%) supaya tidak tabrakan
+            if (pct < 4) return '';
+            return `${v}\n(${pct}%)`;
+          },
+          textAlign: 'center'
+        }
+      }
+    },
+    plugins: [ChartDataLabels]
   });
 }
 
@@ -723,9 +760,36 @@ function countByColumn(col) {
   return Object.fromEntries(Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 10));
 }
 
-/* SUM nilai numerik (valueCol) yang dikelompokkan per groupCol.
-   Contoh: sumByGroup(colMaterial, colJumlah)
-   → { "CB500": 12, "CT150": 8, ... } */
+/* SUM beberapa kolom numerik (valueCols) per groupCol.
+   Mengembalikan { labels: [...], series: [{label, data}, ...] }
+   Top 10 group berdasarkan total kolom pertama (mis. Jumlah MTU). */
+function sumMultiByGroup(groupCol, valueCols) {
+  const out = { labels: [], series: valueCols.map(c => ({ label: c.label, col: c.col, data: [] })) };
+  if (!groupCol) return out;
+
+  const sums = {};
+  filteredData.forEach(r => {
+    const k = r[groupCol];
+    if (k === '' || k === null || k === undefined) return;
+    if (!sums[k]) sums[k] = valueCols.map(() => 0);
+    valueCols.forEach((vc, i) => {
+      const v = parseFloat(String(r[vc.col] || '').replace(/[^\d.-]/g, ''));
+      if (!isNaN(v)) sums[k][i] += v;
+    });
+  });
+
+  // Urutkan berdasarkan kolom pertama (biasanya Jumlah MTU) descending
+  const sorted = Object.entries(sums)
+    .sort((a, b) => b[1][0] - a[1][0])
+    .slice(0, 10);
+
+  out.labels = sorted.map(e => e[0]);
+  sorted.forEach(([_, vals]) => {
+    vals.forEach((v, i) => out.series[i].data.push(v));
+  });
+  return out;
+}
+
 function sumByGroup(groupCol, valueCol) {
   if (!groupCol || !valueCol) return {};
   const sums = {};
@@ -735,7 +799,6 @@ function sumByGroup(groupCol, valueCol) {
     const v = parseFloat(String(r[valueCol]).replace(/[^\d.-]/g, ''));
     if (!isNaN(v)) sums[k] = (sums[k] || 0) + v;
   });
-  // Urutkan dari terbesar, ambil top 10 supaya bar chart tidak pecah
   return Object.fromEntries(Object.entries(sums).sort((a,b) => b[1] - a[1]).slice(0, 10));
 }
 
