@@ -182,6 +182,64 @@
   .table-header h3 { font-size: 0.95rem; font-weight: 600; }
   .table-info { font-size: 0.8rem; color: var(--text-muted); }
 
+  /* Toggle filter tabel */
+  .table-toggle-wrap {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .table-toggle {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .table-toggle-btn {
+    flex: 1 1 auto;
+    min-width: 130px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    padding: 0.55rem 0.85rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+  .table-toggle-btn:hover {
+    background: var(--border);
+    color: var(--text);
+  }
+  .table-toggle-btn .ttb-label {
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .table-toggle-btn .ttb-count {
+    background: var(--surface);
+    color: var(--text-muted);
+    border-radius: 999px;
+    padding: 0.1rem 0.55rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    min-width: 28px;
+    text-align: center;
+  }
+  .table-toggle-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    font-weight: 600;
+    box-shadow: var(--shadow);
+  }
+  .table-toggle-btn.active .ttb-label { color: white; }
+  .table-toggle-btn.active .ttb-count {
+    background: rgba(255,255,255,0.25);
+    color: white;
+  }
+
   .table-scroll {
     overflow-x: auto; overflow-y: auto;
     max-height: 600px;
@@ -506,6 +564,23 @@
         <h3>📋 Data Detail</h3>
         <div class="table-info" id="tableInfo">Menampilkan 0 data</div>
       </div>
+      <!-- Toggle filter tabel: Total MTU / Sudah Terpasang / Belum Terpasang -->
+      <div class="table-toggle-wrap">
+        <div class="table-toggle">
+          <button type="button" class="table-toggle-btn active" data-mode="total">
+            <span class="ttb-label">Total MTU</span>
+            <span class="ttb-count" id="ttbCountTotal">0</span>
+          </button>
+          <button type="button" class="table-toggle-btn" data-mode="terpasang">
+            <span class="ttb-label">Sudah Terpasang</span>
+            <span class="ttb-count" id="ttbCountTerpasang">0</span>
+          </button>
+          <button type="button" class="table-toggle-btn" data-mode="belum">
+            <span class="ttb-label">Belum Terpasang</span>
+            <span class="ttb-count" id="ttbCountBelum">0</span>
+          </button>
+        </div>
+      </div>
       <div class="table-scroll" id="tableScroll">
         <table id="dataTable">
           <thead><tr id="tableHeaderRow"></tr></thead>
@@ -560,6 +635,9 @@ let allData = [], filteredData = [], columns = [];
 let displayColumns = [];
 let currentPage = 1, sortColumn = null, sortDirection = 'asc';
 let barChart = null, pieChart = null;
+
+// Mode toggle untuk tabel data detail: 'total' | 'terpasang' | 'belum'
+let tableMode = 'total';
 
 let colULTG, colGI, colPenyedia, colMaterial, colPabrikan, colAHI;
 let colJumlah, colTerpasang, colBelum, colStatus, colUPT, colBay;
@@ -949,6 +1027,47 @@ function sumByGroup(groupCol, valueCol) {
   return Object.fromEntries(Object.entries(sums).sort((a,b) => b[1] - a[1]).slice(0, 10));
 }
 
+/* Filter data tabel sesuai tableMode aktif:
+   - total: semua data filtered
+   - terpasang: hanya yang Sudah Terpasang > 0
+   - belum: hanya yang Belum Terpasang > 0 */
+function getTableData() {
+  if (tableMode === 'terpasang' && colTerpasang) {
+    return filteredData.filter(r => {
+      const v = parseFloat(String(r[colTerpasang] || '').replace(/[^\d.-]/g, ''));
+      return !isNaN(v) && v > 0;
+    });
+  }
+  if (tableMode === 'belum' && colBelum) {
+    return filteredData.filter(r => {
+      const v = parseFloat(String(r[colBelum] || '').replace(/[^\d.-]/g, ''));
+      return !isNaN(v) && v > 0;
+    });
+  }
+  return filteredData;
+}
+
+/* Update angka di tiap toggle button (count baris jika mode itu dipilih) */
+function updateTableToggleCounts() {
+  const total = filteredData.length;
+  let terpasang = 0, belum = 0;
+  if (colTerpasang) {
+    terpasang = filteredData.filter(r => {
+      const v = parseFloat(String(r[colTerpasang] || '').replace(/[^\d.-]/g, ''));
+      return !isNaN(v) && v > 0;
+    }).length;
+  }
+  if (colBelum) {
+    belum = filteredData.filter(r => {
+      const v = parseFloat(String(r[colBelum] || '').replace(/[^\d.-]/g, ''));
+      return !isNaN(v) && v > 0;
+    }).length;
+  }
+  document.getElementById('ttbCountTotal').textContent = total.toLocaleString('id-ID');
+  document.getElementById('ttbCountTerpasang').textContent = terpasang.toLocaleString('id-ID');
+  document.getElementById('ttbCountBelum').textContent = belum.toLocaleString('id-ID');
+}
+
 function renderTable() {
   const headerRow = document.getElementById('tableHeaderRow');
   const tbody = document.getElementById('tableBody');
@@ -971,9 +1090,15 @@ function renderTable() {
     } else { icon.textContent = '↕'; }
   });
 
+  // Update count di setiap toggle button
+  updateTableToggleCounts();
+
+  // Data tabel: difilter berdasarkan tableMode
+  const tableData = getTableData();
+
   const start = (currentPage - 1) * ROWS_PER_PAGE;
   const end = start + ROWS_PER_PAGE;
-  const pageData = filteredData.slice(start, end);
+  const pageData = tableData.slice(start, end);
 
   tbody.innerHTML = '';
   pageData.forEach(row => {
@@ -1006,8 +1131,8 @@ function renderTable() {
   });
 
   document.getElementById('tableInfo').textContent =
-    `Menampilkan ${filteredData.length === 0 ? 0 : start + 1}-${Math.min(end, filteredData.length)} dari ${filteredData.length} data`;
-  const totalPages = Math.max(1, Math.ceil(filteredData.length / ROWS_PER_PAGE));
+    `Menampilkan ${tableData.length === 0 ? 0 : start + 1}-${Math.min(end, tableData.length)} dari ${tableData.length} data`;
+  const totalPages = Math.max(1, Math.ceil(tableData.length / ROWS_PER_PAGE));
   document.getElementById('paginationInfo').textContent = `Halaman ${currentPage} dari ${totalPages}`;
   document.getElementById('prevPage').disabled = currentPage === 1;
   document.getElementById('nextPage').disabled = currentPage >= totalPages;
@@ -1119,6 +1244,19 @@ function attachListeners() {
       window.barMode = mode;
       document.querySelectorAll('.bar-mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
       renderCharts();
+    });
+  });
+
+  // Toggle filter tabel (Total MTU / Sudah Terpasang / Belum Terpasang)
+  document.querySelectorAll('.table-toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const mode = btn.dataset.mode;
+      if (mode === tableMode) return;
+      tableMode = mode;
+      document.querySelectorAll('.table-toggle-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.mode === mode));
+      currentPage = 1;
+      renderTable();
     });
   });
 }
