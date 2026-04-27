@@ -141,41 +141,42 @@
     flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;
   }
 
-  /* Container tombol kategori di bawah chart (bar per material/penyedia, pie) */
-  .chart-categories {
-    display: flex; flex-wrap: wrap; gap: 0.4rem;
-    margin-top: 0.85rem;
+  /* Filter di atas chart: dropdown + tombol search untuk buka modal */
+  .chart-filter {
+    display: flex; gap: 0.5rem; align-items: stretch;
+    margin-bottom: 0.85rem;
   }
-  .chart-categories:empty { display: none; margin-top: 0; }
-  .chart-cat-btn {
-    background: var(--surface-2);
+  .chart-filter.hidden-filter { display: none; }
+  .chart-filter-select {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
     border: 1px solid var(--border);
-    color: var(--text);
-    padding: 0.5rem 0.85rem;
-    font-size: 0.8rem;
-    font-weight: 500;
     border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.18s;
-    white-space: nowrap;
-    line-height: 1.2;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.85rem;
+    min-width: 0;
   }
-  .chart-cat-btn:hover {
+  .chart-filter-select:focus { outline: none; border-color: var(--primary); }
+  .chart-filter-select option.default-opt { font-weight: 700; }
+  .chart-filter-search {
+    flex: 0 0 auto;
+    padding: 0.5rem 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.18s;
+    display: inline-flex; align-items: center; justify-content: center;
+    line-height: 1;
+  }
+  .chart-filter-search:hover {
     background: var(--primary);
     color: white;
     border-color: var(--primary);
   }
-  /* Khusus untuk AHI: warna ikut level-nya */
-  .chart-cat-btn.ahi-critical { border-color: var(--danger); color: var(--danger); }
-  .chart-cat-btn.ahi-critical:hover { background: var(--danger); color: white; }
-  .chart-cat-btn.ahi-poor { border-color: #f97316; color: #f97316; }
-  .chart-cat-btn.ahi-poor:hover { background: #f97316; color: white; }
-  .chart-cat-btn.ahi-fair { border-color: #ca8a04; color: #ca8a04; }
-  .chart-cat-btn.ahi-fair:hover { background: #ca8a04; color: white; }
-  [data-theme="dark"] .chart-cat-btn.ahi-fair { color: #facc15; border-color: #facc15; }
-  [data-theme="dark"] .chart-cat-btn.ahi-fair:hover { background: #facc15; color: #1a1f36; }
-  .chart-cat-btn.ahi-good { border-color: var(--success); color: var(--success); }
-  .chart-cat-btn.ahi-good:hover { background: var(--success); color: white; }
   .pie-mode-toggle {
     display: inline-flex;
     background: var(--surface-2);
@@ -584,7 +585,8 @@
     <div class="title">
       <div class="logo">⚡</div>
       <div style="min-width:0;">
-        <h1>Dashboard Monitoring KHS MTU 2024</h1>
+        <h2>Dashboard Monitoring KHS MTU 2024</h2>
+        <h1>PT PLN (PERSERO) UPT PROBOLINGGO</h1>
         <div class="subtitle">Realtime data dari Google Sheets</div>
       </div>
     </div>
@@ -650,8 +652,11 @@
             <button type="button" class="bar-mode-btn" data-mode="penyedia">Per Penyedia</button>
           </div>
         </div>
+        <div class="chart-filter" id="barFilter">
+          <select class="chart-filter-select" id="barFilterSelect"></select>
+          <button type="button" class="chart-filter-search" id="barFilterSearch" title="Buka detail data">🔍</button>
+        </div>
         <div class="chart-wrapper"><canvas id="barChart"></canvas></div>
-        <div class="chart-categories" id="barCategories"></div>
       </div>
       <div class="chart-card">
         <div class="chart-card-header">
@@ -661,8 +666,11 @@
             <button type="button" class="pie-mode-btn" data-mode="ahi">AHI</button>
           </div>
         </div>
+        <div class="chart-filter" id="pieFilter">
+          <select class="chart-filter-select" id="pieFilterSelect"></select>
+          <button type="button" class="chart-filter-search" id="pieFilterSearch" title="Buka detail data">🔍</button>
+        </div>
         <div class="chart-wrapper"><canvas id="pieChart"></canvas></div>
-        <div class="chart-categories" id="pieCategories"></div>
       </div>
     </div>
 
@@ -768,6 +776,10 @@ let barChart = null, pieChart = null;
 
 // Mode toggle untuk tabel data detail: 'total' | 'terpasang' | 'belum'
 let tableMode = 'total';
+
+// Filter Status (dari pie chart Status Survey) — tidak ada dropdown di card filter,
+// jadi disimpan di state sendiri; ikut applyFilters seperti filter lainnya
+let statusFilterValue = '';
 
 // State modal: simpan konteks supaya saat toggle mode di modal,
 // kita bisa re-filter dari dataset yang sama
@@ -1113,73 +1125,101 @@ function renderCharts() {
     plugins: [ChartDataLabels]
   });
 
-  // Render tombol kategori di atas chart sesuai mode aktif
-  renderBarCategoryButtons();
-  renderPieCategoryButtons();
+  // Render filter di atas chart
+  renderBarFilter();
+  renderPieFilter();
 }
 
 /* ============================================================
-   CATEGORY BUTTONS — di atas chart, klik buka modal
+   CHART FILTER — di atas chart (dropdown + tombol search)
+   - Dropdown: pilih kategori untuk filter chart (sinkron dengan
+     filter di card filter untuk Material/Penyedia/AHI; untuk
+     Status pakai state lokal statusFilterValue)
+   - Tombol search: buka modal data sesuai pilihan dropdown
 ============================================================ */
-function renderBarCategoryButtons() {
-  const container = document.getElementById('barCategories');
-  if (!container) return;
-  container.innerHTML = '';
+function renderBarFilter() {
+  const wrap = document.getElementById('barFilter');
+  const sel = document.getElementById('barFilterSelect');
+  if (!wrap || !sel) return;
 
   const mode = window.barMode || 'status';
-  if (mode === 'status') return; // Mode Status tidak punya tombol kategori
+  // Mode "Status" tidak punya filter chart
+  if (mode === 'status') {
+    wrap.classList.add('hidden-filter');
+    return;
+  }
+  wrap.classList.remove('hidden-filter');
 
   const groupCol = (mode === 'material') ? colMaterial : colPenyedia;
-  if (!groupCol || !barChart) return;
+  const defaultLabel = (mode === 'material') ? 'Semua Material' : 'Semua Penyedia';
 
-  const labels = barChart.data.labels;
-  labels.forEach(label => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'chart-cat-btn';
-    btn.textContent = label;
-    btn.addEventListener('click', () => {
-      const baseData = filteredData.filter(r => String(r[groupCol] || '') === String(label));
-      const modeLabel = (mode === 'material') ? 'Material' : 'Penyedia Jasa Pasang';
-      openModal(`Detail: ${modeLabel} — ${label}`, baseData);
-    });
-    container.appendChild(btn);
+  // Sinkron value ke dropdown filter atas (Material/Penyedia)
+  const linkedSelectId = (mode === 'material') ? 'filterMaterial' : 'filterPenyedia';
+  const linkedVal = document.getElementById(linkedSelectId).value;
+
+  // Populasi opsi: pakai data hasil cascading dari card filter
+  // (samaan dengan dropdown Material/Penyedia di atas)
+  const scope = (mode === 'material') ? getScopeForLevel(3) : getScopeForLevel(2);
+  const values = getUniqueValues(scope, groupCol);
+
+  sel.innerHTML = '';
+  const def = document.createElement('option');
+  def.value = ''; def.textContent = defaultLabel;
+  def.className = 'default-opt';
+  sel.appendChild(def);
+  values.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v; opt.textContent = v;
+    sel.appendChild(opt);
   });
+  sel.value = (linkedVal && values.includes(linkedVal)) ? linkedVal : '';
 }
 
-function renderPieCategoryButtons() {
-  const container = document.getElementById('pieCategories');
-  if (!container) return;
-  container.innerHTML = '';
-  if (!pieChart) return;
+function renderPieFilter() {
+  const wrap = document.getElementById('pieFilter');
+  const sel = document.getElementById('pieFilterSelect');
+  if (!wrap || !sel) return;
 
   const mode = window.pieMode || 'status';
-  const groupCol = (mode === 'ahi') ? colAHI : colStatus;
-  if (!groupCol) return;
+  wrap.classList.remove('hidden-filter');
 
-  const labels = pieChart.data.labels;
-  labels.forEach(label => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'chart-cat-btn';
+  if (mode === 'ahi') {
+    // Sinkron dengan dropdown AHI di card filter
+    const linkedVal = document.getElementById('filterAHI').value;
+    const scope = getScopeForLevel(6);
+    const values = getUniqueValues(scope, colAHI);
 
-    // Untuk mode AHI: tambah class warna sesuai level
-    if (mode === 'ahi') {
-      const lc = String(label).toLowerCase();
-      if (lc.includes('critical')) btn.classList.add('ahi-critical');
-      else if (lc.includes('poor')) btn.classList.add('ahi-poor');
-      else if (lc.includes('fair')) btn.classList.add('ahi-fair');
-      else if (lc.includes('good')) btn.classList.add('ahi-good');
-    }
-
-    btn.textContent = label;
-    btn.addEventListener('click', () => {
-      const baseData = filteredData.filter(r => String(r[groupCol] || '') === String(label));
-      const modeLabel = (mode === 'ahi') ? 'AHI' : 'Status Survey';
-      openModal(`Detail: ${modeLabel} — ${label}`, baseData);
+    sel.innerHTML = '';
+    const def = document.createElement('option');
+    def.value = ''; def.textContent = 'Semua AHI';
+    def.className = 'default-opt';
+    sel.appendChild(def);
+    values.forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v; opt.textContent = v;
+      sel.appendChild(opt);
     });
-    container.appendChild(btn);
-  });
+    sel.value = (linkedVal && values.includes(linkedVal)) ? linkedVal : '';
+  } else {
+    // Status Survey — pakai statusFilterValue (tidak ada dropdown di card filter)
+    if (!colStatus) {
+      wrap.classList.add('hidden-filter');
+      return;
+    }
+    const values = getUniqueValues(allData, colStatus);
+
+    sel.innerHTML = '';
+    const def = document.createElement('option');
+    def.value = ''; def.textContent = 'Semua Status';
+    def.className = 'default-opt';
+    sel.appendChild(def);
+    values.forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v; opt.textContent = v;
+      sel.appendChild(opt);
+    });
+    sel.value = statusFilterValue || '';
+  }
 }
 
 /* ============================================================
@@ -1505,6 +1545,7 @@ function applyFilters() {
     if (materialVal && colMaterial && row[colMaterial] !== materialVal) return false;
     if (pabrikanVal && colPabrikan && row[colPabrikan] !== pabrikanVal) return false;
     if (ahiVal && colAHI && row[colAHI] !== ahiVal) return false;
+    if (statusFilterValue && colStatus && row[colStatus] !== statusFilterValue) return false;
     return true;
   });
 
@@ -1545,6 +1586,7 @@ function attachListeners() {
   document.getElementById('resetFilters').addEventListener('click', () => {
     ['filterULTG','filterGI','filterPenyedia','filterMaterial','filterPabrikan','filterAHI']
       .forEach(id => document.getElementById(id).value = '');
+    statusFilterValue = '';
     populateAllFilters();
     applyFilters();
   });
@@ -1602,6 +1644,78 @@ function attachListeners() {
       copyDataAsTSV(getTableData(), e.currentTarget);
     });
   }
+
+  // ===== Filter di atas BAR chart =====
+  // Dropdown bar — sinkron ke filter Material / Penyedia di card filter atas
+  document.getElementById('barFilterSelect').addEventListener('change', (e) => {
+    const val = e.target.value;
+    const mode = window.barMode || 'status';
+    if (mode === 'material') {
+      const linked = document.getElementById('filterMaterial');
+      linked.value = val;
+      linked.dispatchEvent(new Event('change'));
+    } else if (mode === 'penyedia') {
+      const linked = document.getElementById('filterPenyedia');
+      linked.value = val;
+      linked.dispatchEvent(new Event('change'));
+    }
+  });
+
+  // Tombol search bar — buka modal sesuai pilihan
+  document.getElementById('barFilterSearch').addEventListener('click', () => {
+    const mode = window.barMode || 'status';
+    if (mode === 'status') return;
+
+    const sel = document.getElementById('barFilterSelect');
+    const val = sel.value;
+    const groupCol = (mode === 'material') ? colMaterial : colPenyedia;
+    const modeLabel = (mode === 'material') ? 'Material' : 'Penyedia Jasa Pasang';
+
+    let baseData, title;
+    if (val) {
+      baseData = filteredData.filter(r => String(r[groupCol] || '') === String(val));
+      title = `Detail: ${modeLabel} — ${val}`;
+    } else {
+      baseData = [...filteredData];
+      title = `Detail: Semua ${modeLabel}`;
+    }
+    openModal(title, baseData);
+  });
+
+  // ===== Filter di atas PIE chart =====
+  document.getElementById('pieFilterSelect').addEventListener('change', (e) => {
+    const val = e.target.value;
+    const mode = window.pieMode || 'status';
+    if (mode === 'ahi') {
+      // Sinkron ke filter AHI di card filter
+      const linked = document.getElementById('filterAHI');
+      linked.value = val;
+      linked.dispatchEvent(new Event('change'));
+    } else {
+      // Status — pakai state lokal
+      statusFilterValue = val;
+      applyFilters();
+    }
+  });
+
+  // Tombol search pie — buka modal sesuai pilihan
+  document.getElementById('pieFilterSearch').addEventListener('click', () => {
+    const mode = window.pieMode || 'status';
+    const sel = document.getElementById('pieFilterSelect');
+    const val = sel.value;
+    const groupCol = (mode === 'ahi') ? colAHI : colStatus;
+    const modeLabel = (mode === 'ahi') ? 'AHI' : 'Status Survey';
+
+    let baseData, title;
+    if (val) {
+      baseData = filteredData.filter(r => String(r[groupCol] || '') === String(val));
+      title = `Detail: ${modeLabel} — ${val}`;
+    } else {
+      baseData = [...filteredData];
+      title = `Detail: Semua ${modeLabel}`;
+    }
+    openModal(title, baseData);
+  });
 }
 
 /* Pakai native scroll browser — paling halus di HP */
