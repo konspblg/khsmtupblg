@@ -1,0 +1,569 @@
+:root {
+    --bg: #f5f7fb; --surface: #ffffff; --surface-2: #f0f2f7;
+    --text: #1a1f36; --text-muted: #6b7280; --border: #e5e7eb;
+    --primary: #2563eb; --primary-hover: #1d4ed8;
+    --success: #16a34a; --warning: #f59e0b; --danger: #dc2626;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-lg: 0 8px 20px rgba(0,0,0,0.15);
+    --row-selected-bg: #fef3c7;
+    --row-selected-text: #1a1f36;
+    --row-selected-border: #f59e0b;
+  }
+  [data-theme="dark"] {
+    --bg: #0f172a; --surface: #1e293b; --surface-2: #283548;
+    --text: #f1f5f9; --text-muted: #94a3b8; --border: #334155;
+    --primary: #3b82f6; --primary-hover: #60a5fa;
+    --success: #22c55e; --warning: #fbbf24; --danger: #ef4444;
+    --shadow: 0 1px 3px rgba(0,0,0,0.4);
+    --shadow-lg: 0 8px 20px rgba(0,0,0,0.5);
+    --row-selected-bg: #3b3416;
+    --row-selected-text: #fde68a;
+    --row-selected-border: #fbbf24;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%; max-width: 100%; overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh; transition: background 0.3s, color 0.3s; line-height: 1.5;
+  }
+
+  header {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 1rem 1.25rem; box-shadow: var(--shadow);
+    position: sticky; top: 0; z-index: 100; width: 100%;
+  }
+  .header-inner {
+    width: 100%; max-width: 1240px; margin: 0 auto;
+    display: flex; flex-direction: column; gap: 0.75rem;
+  }
+  .title { display: flex; align-items: center; gap: 0.6rem; min-width: 0; width: 100%; }
+  .title h1 { font-size: clamp(1rem, 3.5vw, 1.25rem); font-weight: 600; line-height: 1.25; }
+  .title .subtitle { font-size: clamp(0.7rem, 2vw, 0.8rem); color: var(--text-muted); }
+  .logo {
+    width: 40px; height: 40px; flex-shrink: 0;
+    background: var(--primary); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 1.1rem;
+  }
+  .header-actions {
+    display: flex; gap: 0.5rem; align-items: center;
+    justify-content: flex-end; width: 100%; flex-wrap: wrap;
+  }
+  .btn {
+    padding: 0.5rem 0.85rem; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--surface); color: var(--text); cursor: pointer;
+    font-size: 0.85rem; transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap;
+  }
+  .btn:hover { background: var(--surface-2); border-color: var(--primary); }
+  .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ===== MAIN: padding fluid kiri-kanan ===== */
+  main {
+    width: 100%;
+    max-width: 1240px;
+    margin: 0 auto;
+    /* padding kiri-kanan responsif: minimum 1.25rem di HP, sampai 3rem di desktop */
+    padding: 1rem clamp(1.25rem, 6vw, 3rem);
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+    gap: 0.75rem; margin-bottom: 1.25rem; width: 100%;
+  }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem 1.25rem; box-shadow: var(--shadow);
+    min-width: 0;
+  }
+  .stat-card .label {
+    font-size: 0.75rem; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;
+    word-break: break-word;
+  }
+  .stat-card .value { font-size: clamp(1.4rem, 4vw, 1.75rem); font-weight: 700; word-break: break-word; }
+  .stat-card.primary { border-left: 4px solid var(--primary); }
+  .stat-card.success { border-left: 4px solid var(--success); }
+  .stat-card.warning { border-left: 4px solid var(--warning); }
+
+  .filters {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem;
+    box-shadow: var(--shadow);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+    gap: 0.75rem; width: 100%;
+  }
+  .filter-group { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
+  .filter-group label {
+    font-size: 0.7rem; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;
+  }
+  .filter-group select {
+    width: 100%; padding: 0.55rem 0.75rem; border: 1px solid var(--border);
+    border-radius: 8px; background: var(--surface); color: var(--text);
+    font-size: 0.9rem;
+  }
+  .filter-group select:focus { outline: none; border-color: var(--primary); }
+  .filter-group select:disabled { opacity: 0.5; cursor: not-allowed; }
+  /* Opsi default ("Semua ULTG", dll) tampil bold */
+  .filter-group select option.default-opt { font-weight: 700; }
+  .filter-reset { grid-column: 1 / -1; display: flex; justify-content: flex-end; }
+
+  .charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    gap: 1rem; margin-bottom: 1.25rem; width: 100%;
+  }
+  .chart-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem; box-shadow: var(--shadow); min-width: 0;
+  }
+  .chart-card h3 { font-size: 0.95rem; font-weight: 600; }
+  .chart-card-header {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;
+  }
+
+  /* Filter di atas chart: dropdown + tombol search untuk buka modal */
+  .chart-filter {
+    display: flex; gap: 0.5rem; align-items: stretch;
+    margin-bottom: 0.85rem;
+  }
+  .chart-filter.hidden-filter { display: none; }
+  .chart-filter-select {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.85rem;
+    min-width: 0;
+  }
+  .chart-filter-select:focus { outline: none; border-color: var(--primary); }
+  .chart-filter-select option.default-opt { font-weight: 700; }
+  .chart-filter-search {
+    flex: 0 0 auto;
+    padding: 0.5rem 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.18s;
+    display: inline-flex; align-items: center; justify-content: center;
+    line-height: 1;
+  }
+  .chart-filter-search:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+  .pie-mode-toggle {
+    display: inline-flex;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 2px;
+    gap: 2px;
+  }
+  .pie-mode-btn, .bar-mode-btn {
+    background: transparent;
+    border: none;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.18s;
+    white-space: nowrap;
+  }
+  .pie-mode-btn:hover, .bar-mode-btn:hover { color: var(--text); }
+  .pie-mode-btn.active, .bar-mode-btn.active {
+    background: var(--surface);
+    color: var(--primary);
+    font-weight: 600;
+    box-shadow: var(--shadow);
+  }
+  .chart-wrapper { position: relative; height: 280px; width: 100%; }
+
+  .table-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; width: 100%;
+  }
+  .table-header {
+    padding: 0.85rem 1rem; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 0.5rem;
+  }
+  .table-header h3 { font-size: 0.95rem; font-weight: 600; }
+  .table-info { font-size: 0.8rem; color: var(--text-muted); }
+  .table-header-right {
+    display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+  }
+  .btn-copy {
+    font-size: 0.78rem;
+    padding: 0.4rem 0.7rem;
+  }
+  .btn-copy.copied {
+    background: var(--success);
+    color: white;
+    border-color: var(--success);
+  }
+
+  /* Hyperlink di dalam tabel data */
+  td a.cell-link {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    word-break: break-all;
+  }
+  td a.cell-link:hover { color: var(--primary-hover); }
+
+  /* Toggle filter tabel */
+  .table-toggle-wrap {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .table-toggle {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .table-toggle-btn {
+    flex: 1 1 auto;
+    min-width: 130px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    padding: 0.55rem 0.85rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+  .table-toggle-btn:hover {
+    background: var(--border);
+    color: var(--text);
+  }
+  .table-toggle-btn .ttb-label {
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .table-toggle-btn .ttb-count {
+    background: var(--surface);
+    color: var(--text-muted);
+    border-radius: 999px;
+    padding: 0.1rem 0.55rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    min-width: 28px;
+    text-align: center;
+  }
+  .table-toggle-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    font-weight: 600;
+    box-shadow: var(--shadow);
+  }
+  .table-toggle-btn.active .ttb-label { color: white; }
+  .table-toggle-btn.active .ttb-count {
+    background: rgba(255,255,255,0.25);
+    color: white;
+  }
+
+  .table-scroll {
+    overflow-x: auto; overflow-y: auto;
+    max-height: 600px;
+    -webkit-overflow-scrolling: touch;
+    /* Hint browser untuk optimasi scroll */
+    will-change: scroll-position;
+    contain: paint;
+    /* Scroll snap ringan opsional, biar geser lebih "kunci" */
+    overscroll-behavior: contain;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  thead { background: var(--surface-2); }
+  th {
+    padding: 0.7rem 0.9rem; text-align: left; font-weight: 600;
+    border-bottom: 1px solid var(--border); cursor: pointer;
+    user-select: none; white-space: nowrap;
+    position: sticky; top: 0; background: var(--surface-2); z-index: 1;
+    font-size: 0.85rem;
+  }
+  th:hover { background: var(--border); }
+  th .sort-icon { opacity: 0.4; margin-left: 0.25rem; font-size: 0.7rem; }
+  th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--primary); }
+  td {
+    padding: 0.7rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    font-size: 0.85rem;
+    /* Cegah auto-resize teks panjang di iOS/mobile */
+    max-width: 320px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  tbody tr { transition: background 0.15s; cursor: pointer; }
+  tbody tr:hover { background: var(--surface-2); }
+  tbody tr.highlight-danger { background: rgba(220, 38, 38, 0.08); }
+  tbody tr.highlight-warning { background: rgba(245, 158, 11, 0.08); }
+
+  tbody tr.row-selected,
+  tbody tr.row-selected:hover,
+  tbody tr.row-selected.highlight-warning,
+  tbody tr.row-selected.highlight-danger {
+    background: var(--row-selected-bg) !important;
+    color: var(--row-selected-text);
+    box-shadow: inset 4px 0 0 var(--row-selected-border);
+    font-weight: 500;
+  }
+
+  .loading, .error {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 2.5rem 1.25rem; text-align: center;
+    box-shadow: var(--shadow); width: 100%;
+  }
+  .spinner {
+    border: 4px solid var(--border); border-top: 4px solid var(--primary);
+    border-radius: 50%; width: 48px; height: 48px;
+    animation: spin 1s linear infinite; margin: 0 auto 1rem;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  .error h3 { color: var(--danger); margin-bottom: 0.5rem; }
+  .error p { color: var(--text-muted); margin-bottom: 1rem; word-break: break-word; }
+
+  .pagination {
+    padding: 0.85rem 1rem; border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 0.5rem;
+  }
+  .pagination-info { font-size: 0.8rem; color: var(--text-muted); }
+  .pagination-buttons { display: flex; gap: 0.4rem; }
+
+  .hidden { display: none !important; }
+
+  /* ===== MODAL DRILLDOWN ===== */
+  body.modal-open { overflow: hidden; }
+
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    padding: clamp(1rem, 5vh, 4rem) clamp(1rem, 4vw, 2rem);
+  }
+  .modal-backdrop.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  [data-theme="dark"] .modal-backdrop { background: rgba(0, 0, 0, 0.65); }
+
+  .modal-sheet {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 1100px;
+    /* Tinggi konsisten — modal selalu 85vh, tidak menyusut sesuai konten */
+    height: 85vh;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.25);
+    transform: translateY(100vh);
+    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+    overflow: hidden;
+  }
+  .modal-backdrop.visible .modal-sheet { transform: translateY(0); }
+
+  .modal-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+    flex-shrink: 0;
+  }
+  .modal-title-wrap { min-width: 0; flex: 1; }
+  .modal-header h3 {
+    font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+    font-weight: 600;
+    word-break: break-word;
+    line-height: 1.3;
+  }
+  .modal-info {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+  }
+  .modal-close {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .modal-close:hover { background: var(--surface-2); border-color: var(--danger); color: var(--danger); }
+
+  .modal-actions {
+    display: flex; gap: 0.5rem; align-items: center; flex-shrink: 0;
+  }
+
+  /* Toggle filter di dalam modal — pakai class .modal-toggle-btn dengan style sama */
+  .modal-toggle-wrap { padding: 0.65rem 1rem; }
+  .modal-toggle-btn {
+    flex: 1 1 auto;
+    min-width: 110px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+  }
+  .modal-toggle-btn:hover { background: var(--border); color: var(--text); }
+  .modal-toggle-btn .ttb-label { font-weight: 500; white-space: nowrap; }
+  .modal-toggle-btn .ttb-count {
+    background: var(--surface);
+    color: var(--text-muted);
+    border-radius: 999px;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    min-width: 26px;
+    text-align: center;
+  }
+  .modal-toggle-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    font-weight: 600;
+    box-shadow: var(--shadow);
+  }
+  .modal-toggle-btn.active .ttb-label { color: white; }
+  .modal-toggle-btn.active .ttb-count {
+    background: rgba(255,255,255,0.25);
+    color: white;
+  }
+
+  .modal-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .modal-table-scroll {
+    flex: 1;
+    overflow-x: auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    will-change: scroll-position;
+    contain: paint;
+    overscroll-behavior: contain;
+  }
+  .modal-table-scroll table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .modal-table-scroll thead { background: var(--surface-2); }
+  .modal-table-scroll th {
+    padding: 0.7rem 0.9rem; text-align: left; font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap; font-size: 0.85rem;
+    position: sticky; top: 0; background: var(--surface-2); z-index: 1;
+  }
+  .modal-table-scroll td {
+    padding: 0.7rem 0.9rem; border-bottom: 1px solid var(--border);
+    white-space: nowrap; font-size: 0.85rem;
+    max-width: 320px; overflow: hidden; text-overflow: ellipsis;
+  }
+  .modal-table-scroll tbody tr:hover { background: var(--surface-2); }
+
+  .modal-empty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+
+  /* ===== Scroll to Top button ===== */
+  .scroll-top {
+    position: fixed;
+    bottom: clamp(1rem, 3vw, 1.75rem);
+    right: clamp(1rem, 3vw, 1.75rem);
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(12px);
+    transition: opacity 0.25s ease, transform 0.25s ease, background 0.2s;
+    z-index: 200;
+  }
+  .scroll-top.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+  .scroll-top:hover { background: var(--primary-hover); }
+  .scroll-top:active { transform: translateY(0) scale(0.95); }
+
+  @media (max-width: 480px) {
+    main { padding: 0.75rem 1.25rem; }
+    header { padding: 0.85rem 1.25rem; }
+    .title h1 { font-size: 1rem; }
+    .logo { width: 36px; height: 36px; font-size: 1rem; }
+    .btn { padding: 0.45rem 0.65rem; font-size: 0.8rem; }
+    .stat-card { padding: 0.85rem 1rem; }
+    .filters, .chart-card { padding: 0.85rem; }
+    .chart-wrapper { height: 240px; }
+    .scroll-top { width: 44px; height: 44px; font-size: 1.25rem; }
+    /* Modal di HP: padding lebih kecil agar konten lega */
+    .modal-backdrop { padding: 2vh 0.75rem; }
+    .modal-sheet { height: 90vh; max-height: 90vh; border-radius: 14px; }
+    .modal-header { padding: 0.85rem 1rem; }
+    .modal-table-scroll th, .modal-table-scroll td { padding: 0.6rem 0.75rem; font-size: 0.8rem; }
+  }
