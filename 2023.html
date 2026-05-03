@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dashboard KHS MTU 2023 — UPT Probolinggo</title>
+<link rel="stylesheet" href="assets/style.css"/>
+<script>
+/* ── KONFIGURASI DASHBOARD 2023 ─────────────────────────
+   Sheet  : 03. REKAP MTU 2023  (gid=1740942727)
+   Kolom  : D (idx 3)  = STATUS MTU → filter hanya SCM
+             L (idx 11) = JML MTU
+             T (idx 19) = STATUS PASANG (SUDAH/BELUM/BURSA)
+   Tabel  : tampilkan kolom 0..19 (A sampai T)
+──────────────────────────────────────────────────────── */
+const DASHBOARD_CONFIG = {
+  sheetId      : '1n2rFEUf5O02qZuUqEK9WqID5nC9CGObcokTN2qZ8Sps',
+  gid          : '1740942727',
+  year         : 2023,
+  title        : 'KHS MTU 2023',
+  jumlahIdx    : 11,
+  statusIdx    : 19,
+  filterIdx    : 3,
+  filterVal    : 'SCM',
+  tableUntilIdx: 19
+};
+</script>
+</head>
+<body>
+
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+<aside class="sidebar" id="sidebar" aria-hidden="true">
+  <div class="sidebar-header">
+    <div class="sidebar-title">
+      <div class="logo">⚡</div>
+      <div><div class="sidebar-brand">KHS MTU</div><div class="sidebar-sub">UPT Probolinggo</div></div>
+    </div>
+    <button class="sidebar-close" id="sidebarCloseBtn" aria-label="Tutup sidebar">✕</button>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="index.html" class="sidebar-link">🏠 <span>Dashboard Utama</span></a>
+    <a href="2018.html" class="sidebar-link">📅 <span>MTU 2018</span></a>
+    <a href="2021.html" class="sidebar-link">📅 <span>MTU 2021</span></a>
+    <a href="2023.html" class="sidebar-link active">📅 <span>MTU 2023</span></a>
+    <a href="2024.html" class="sidebar-link">📅 <span>MTU 2024</span></a>
+  </nav>
+  <div class="sidebar-footer"><div>PT PLN (PERSERO)</div><div>UPT PROBOLINGGO</div></div>
+</aside>
+
+<header>
+  <div class="header-inner">
+    <div class="title">
+      <button class="hamburger-btn" id="hamburgerBtn" aria-label="Buka menu">☰</button>
+      <div class="logo">⚡</div>
+      <div style="min-width:0;">
+        <h1>Dashboard Monitoring KHS MTU 2023</h1>
+        <div class="subtitle">Realtime data dari Google Sheets</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn" id="refreshBtnL">🔄 Refresh</button>
+      <button class="btn" id="themeToggle">🌙 Dark</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div id="loadingL" class="loading">
+    <div class="spinner"></div><p>Memuat data dari Google Sheets...</p>
+  </div>
+  <div id="errorL" class="error hidden">
+    <h3>Gagal memuat data</h3><p id="errorMsgL"></p>
+    <button class="btn btn-primary" onclick="loadDataLegacy()">Coba Lagi</button>
+  </div>
+  <div id="dashboardL" class="hidden">
+    <div class="stats-grid">
+      <div class="stat-card primary"><div class="label">JUMLAH MTU</div><div class="value" id="statTotal">—</div></div>
+      <div class="stat-card success"><div class="label">SUDAH TERPASANG</div><div class="value" id="statTerpasang">—</div></div>
+      <div class="stat-card warning"><div class="label">BELUM TERPASANG</div><div class="value" id="statBelum">—</div></div>
+      <!-- Bursa: ditampilkan oleh JS karena year=2023 -->
+      <div class="stat-card danger" id="statBursaWrap">
+        <div class="label">BELUM TERPASANG (BURSA)</div>
+        <div class="value" id="statBursa">—</div>
+      </div>
+    </div>
+    <div class="filters">
+      <div class="filter-group"><label for="filterGIL">Gardu Induk</label><select id="filterGIL"><option value="" class="default-opt">Semua GI</option></select></div>
+      <div class="filter-group"><label for="filterJenisMTUL">Jenis MTU</label><select id="filterJenisMTUL"><option value="" class="default-opt">Semua Jenis MTU</option></select></div>
+      <div class="filter-group"><label for="filterStatusL">Status Pasang</label><select id="filterStatusL"><option value="" class="default-opt">Semua Status</option></select></div>
+      <div class="filter-reset"><button class="btn" id="resetFiltersL">↺ Reset Filter</button></div>
+    </div>
+    <div class="table-card">
+      <div class="table-header">
+        <h3>📋 Data Detail</h3>
+        <div class="table-header-right">
+          <div class="table-info" id="tableInfoL">Menampilkan 0 data</div>
+          <button class="btn btn-copy" id="copyTableBtnL" title="Salin data">📋 Copy</button>
+        </div>
+      </div>
+      <div class="table-toggle-wrap">
+        <div class="table-toggle">
+          <button type="button" class="table-toggle-btn table-toggle-btn-l active" data-mode="total"><span class="ttb-label">Total MTU</span><span class="ttb-count" id="ttbCountTotalL">0</span></button>
+          <button type="button" class="table-toggle-btn table-toggle-btn-l" data-mode="terpasang"><span class="ttb-label">Sudah Terpasang</span><span class="ttb-count" id="ttbCountTerpasangL">0</span></button>
+          <button type="button" class="table-toggle-btn table-toggle-btn-l" data-mode="belum"><span class="ttb-label">Belum Terpasang</span><span class="ttb-count" id="ttbCountBelumL">0</span></button>
+        </div>
+      </div>
+      <div class="table-scroll"><table><thead><tr id="tableHeaderRowL"></tr></thead><tbody id="tableBodyL"></tbody></table></div>
+      <div class="pagination">
+        <div class="pagination-info" id="paginationInfoL"></div>
+        <div class="pagination-buttons"><button class="btn" id="prevPageL">← Prev</button><button class="btn" id="nextPageL">Next →</button></div>
+      </div>
+    </div>
+  </div>
+</main>
+<button class="scroll-top" id="scrollTopBtn" title="Kembali ke atas">↑</button>
+<script src="assets/dashboard-legacy.js"></script>
+</body>
+</html>
