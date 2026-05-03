@@ -567,3 +567,286 @@
     .modal-header { padding: 0.85rem 1rem; }
     .modal-table-scroll th, .modal-table-scroll td { padding: 0.6rem 0.75rem; font-size: 0.8rem; }
   }
+
+/* ============================================================
+   SIDEBAR NAVIGATION
+   Tombol hamburger di kiri header → buka sidebar slide-in
+   Klik backdrop, tombol X, link, atau Esc → tutup sidebar
+============================================================ */
+.hamburger-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 40px; height: 40px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  margin-right: 0.25rem;
+}
+.hamburger-btn:hover {
+  background: var(--surface-2);
+  border-color: var(--primary);
+}
+
+.sidebar-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 400;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.sidebar-backdrop.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+[data-theme="dark"] .sidebar-backdrop { background: rgba(0, 0, 0, 0.65); }
+
+.sidebar {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: min(300px, 85vw);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  z-index: 401;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+}
+.sidebar.open { transform: translateX(0); }
+
+.sidebar-header {
+  padding: 1.1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+.sidebar-title {
+  display: flex; align-items: center; gap: 0.6rem;
+  min-width: 0;
+}
+.sidebar-brand {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text);
+  line-height: 1.2;
+}
+.sidebar-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.sidebar-close {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.95rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.sidebar-close:hover {
+  background: var(--surface-2);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.sidebar-link {
+  text-decoration: none;
+  color: var(--text);
+  padding: 0.7rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  transition: background 0.15s, color 0.15s;
+  border: 1px solid transparent;
+}
+.sidebar-link:hover {
+  background: var(--surface-2);
+}
+.sidebar-link.active {
+  background: var(--primary);
+  color: white;
+  font-weight: 600;
+}
+.sidebar-link.active:hover {
+  background: var(--primary-hover);
+}
+.sidebar-link.disabled {
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.sidebar-link.disabled:hover { background: transparent; }
+
+.sidebar-footer {
+  padding: 0.85rem 1.25rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* ============================================================
+   OVERVIEW PAGE — kartu ringkasan & kartu tahun
+============================================================ */
+.overview-section { margin-bottom: 1.5rem; }
+.overview-section-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--text);
+}
+
+.summary-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  margin-bottom: 1.5rem;
+}
+.summary-card-title {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 1rem;
+}
+.summary-stat {
+  padding: 0.85rem 1rem;
+  border-left: 4px solid var(--primary);
+  background: var(--surface-2);
+  border-radius: 8px;
+}
+.summary-stat.success { border-left-color: var(--success); }
+.summary-stat.warning { border-left-color: var(--warning); }
+.summary-stat .label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+.summary-stat .value {
+  font-size: clamp(1.4rem, 4vw, 1.75rem);
+  font-weight: 700;
+  word-break: break-word;
+}
+.summary-stat .value.is-loading {
+  color: var(--text-muted);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.year-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 1rem;
+}
+.year-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  position: relative;
+}
+.year-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  border-color: var(--primary);
+}
+.year-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.year-card-year {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+.year-card-arrow {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  transition: transform 0.2s, color 0.2s;
+}
+.year-card:hover .year-card-arrow {
+  color: var(--primary);
+  transform: translateX(3px);
+}
+.year-card-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.year-card-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px dashed var(--border);
+}
+.year-card-stat:last-child { border-bottom: none; }
+.year-card-stat .stat-label {
+  color: var(--text-muted);
+}
+.year-card-stat .stat-value {
+  font-weight: 700;
+  color: var(--text);
+}
+.year-card-stat.success .stat-value { color: var(--success); }
+.year-card-stat.warning .stat-value { color: var(--warning); }
+
+.year-card.disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.year-card.disabled .year-card-year { color: var(--text-muted); }
+
+.year-card-loading {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
