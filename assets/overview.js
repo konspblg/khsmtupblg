@@ -38,11 +38,11 @@ const YEAR_CONFIG = [
     year: 2023,
     gid: '1740942727',
     page: '2023.html',
-    // Kolom D (idx 3) = STATUS MTU (filter SCM), Kolom K (idx 10) = JML MTU,
+    // Kolom D (idx 3) = STATUS MTU (filter SCM), Kolom L (idx 11) = JML MTU,
     // Kolom T (idx 19) = STATUS PASANG (SUDAH/BELUM/BURSA)
     filterColIdx: 3,
     filterVal: 'SCM',
-    jumlahColIdx: 10,
+    jumlahColIdx: 11,
     statusColIdx: 19,
     mode: '2023'
   },
@@ -221,27 +221,17 @@ function renderYearCards() {
 
     let body;
     if (!stat) {
-      // Placeholder dengan tinggi sama (3 baris stat + 1 baris bursa placeholder)
-      body = `
-        <div class="year-card-stats">
-          <div class="year-card-stat"><span class="stat-label">Total MTU</span><span class="year-card-loading">Memuat...</span></div>
-          <div class="year-card-stat success"><span class="stat-label">Sudah Terpasang</span><span class="year-card-loading">—</span></div>
-          <div class="year-card-stat warning"><span class="stat-label">Belum Terpasang</span><span class="year-card-loading">—</span></div>
-          <div class="year-card-stat bursa"><span class="stat-label">Bursa</span><span class="year-card-loading">—</span></div>
-        </div>`;
+      body = `<div class="year-card-loading">Memuat data...</div>`;
     } else if (stat.error) {
-      body = `
-        <div class="year-card-stats">
-          <div class="year-card-stat"><span class="stat-label" colspan="2">⚠️ ${stat.error}</span></div>
-          <div class="year-card-stat success"><span class="stat-label">Sudah Terpasang</span><span class="stat-value">—</span></div>
-          <div class="year-card-stat warning"><span class="stat-label">Belum Terpasang</span><span class="stat-value">—</span></div>
-          <div class="year-card-stat bursa"><span class="stat-label">Bursa</span><span class="stat-value">—</span></div>
-        </div>`;
+      body = `<div class="year-card-loading">⚠️ ${stat.error}</div>`;
     } else {
-      // Semua card selalu tampilkan 4 baris stat agar tinggi konsisten
-      // Untuk card yang tidak punya bursa (2018, 2021, 2024), baris bursa tetap
-      // ditampilkan dengan nilai 0 agar layout seragam
-      const hasBursa = stat.bursa > 0;
+      const bursaRow = cfg.mode === '2023'
+        ? `<div class="year-card-stat bursa">
+             <span class="stat-label">Belum Terpasang (Bursa)</span>
+             <span class="stat-value">${stat.bursa.toLocaleString('id-ID')}</span>
+           </div>`
+        : '';
+
       body = `
         <div class="year-card-stats">
           <div class="year-card-stat">
@@ -256,10 +246,7 @@ function renderYearCards() {
             <span class="stat-label">Belum Terpasang</span>
             <span class="stat-value">${stat.belum.toLocaleString('id-ID')}</span>
           </div>
-          <div class="year-card-stat bursa">
-            <span class="stat-label">Bursa</span>
-            <span class="stat-value">${hasBursa ? stat.bursa.toLocaleString('id-ID') : '—'}</span>
-          </div>
+          ${bursaRow}
         </div>`;
     }
 
