@@ -20,34 +20,44 @@ const YEAR_CONFIG = [
     year: 2018,
     gid: '1663287907',
     page: '2018.html',
-    countMode: 'row',
-    statusCol: ['status pasang', 'status'],
+    // Kolom O (idx 14) = JML MTU, Kolom P (idx 15) = STATUS PASANG
+    jumlahColIdx: 14,
+    statusColIdx: 15,
+    mode: '2018'
   },
   {
     year: 2021,
     gid: '561512309',
     page: '2021.html',
-    countMode: 'unit',
-    jumlahCol: ['jml mtu', 'jumlah mtu', 'jumlah', 'jml'],
-    statusCol: ['status pasang', 'status'],
+    // Kolom I (idx 8) = JML MTU, Kolom Q (idx 16) = STATUS PASANG
+    jumlahColIdx: 8,
+    statusColIdx: 16,
+    mode: '2021'
   },
   {
     year: 2023,
     gid: '1740942727',
     page: '2023.html',
-    countMode: 'unit',
-    jumlahCol: ['jml mtu', 'jumlah mtu', 'jumlah', 'jml'],
-    statusCol: ['status pasang', 'status'],
+    // Kolom D (idx 3) = STATUS MTU (filter SCM), Kolom K (idx 10) = JML MTU,
+    // Kolom T (idx 19) = STATUS PASANG (SUDAH/BELUM/BURSA)
+    filterColIdx: 3,
+    filterVal: 'SCM',
+    jumlahColIdx: 10,
+    statusColIdx: 19,
+    mode: '2023'
   },
   {
     year: 2024,
     gid: '1351233736',
     page: '2024.html',
-    countMode: 'sum',
+    // Kolom H (idx 7) = Material (exclude SF6)
+    // Pakai auto-detect nama kolom seperti di dashboard.js
     jumlahCol: ['jumlah mtu', 'jumlah'],
     terpasangCol: ['sudah terpasang', 'terpasang'],
     belumCol: ['belum terpasang', 'sisa'],
-    excludeMaterial: ['SF6']
+    excludeMaterialIdx: 7,
+    excludeMaterial: ['SF6'],
+    mode: '2024'
   }
 ];
 
@@ -100,71 +110,99 @@ function toNum(v) {
   return isNaN(n) ? 0 : n;
 }
 
-function isTerpasang(statusVal) {
-  const s = String(statusVal || '').trim().toLowerCase();
-  // Anggap "sudah" sebagai terpasang
-  return s === 'sudah' || s.startsWith('sudah ');
+function isTerpasang(v) {
+  return String(v || '').trim().toLowerCase() === 'sudah';
 }
-
-function isBelum(statusVal) {
-  const s = String(statusVal || '').trim().toLowerCase();
-  return s === 'belum' || s.startsWith('belum ');
+function isBursa(v) {
+  return String(v || '').trim().toLowerCase() === 'bursa';
 }
 
 /* ============================================================
-   HITUNG STATS PER TAHUN sesuai countMode
+   HITUNG STATS PER TAHUN
 ============================================================ */
 function computeStats(config, parsed) {
   const { cols, rows } = parsed;
 
-  if (config.countMode === 'sum') {
-    // 2024: SUM kolom angka (sama logika dengan dashboard.js)
-    let data = rows;
-    const matCol = cols[7]; // kolom H = Material (sama seperti di dashboard.js)
-    if (matCol && config.excludeMaterial) {
-      data = data.filter(r => {
-        const m = String(r[matCol] || '').toUpperCase();
-        return !config.excludeMaterial.some(ex => m.includes(ex.toUpperCase()));
-      });
-    }
-    const colJumlah = findCol(cols, config.jumlahCol);
-    const colTerpasang = findCol(cols, config.terpasangCol);
-    const colBelum = findCol(cols, config.belumCol);
-    const sum = (col) => col ? data.reduce((s, r) => s + toNum(r[col]), 0) : 0;
-    return {
-      total: sum(colJumlah),
-      terpasang: sum(colTerpasang),
-      belum: sum(colBelum)
-    };
-  }
-
-  if (config.countMode === 'unit') {
-    // 2021/2023: pakai kolom Jumlah MTU sebagai unit angka,
-    // status terpasang/belum dari kolom STATUS PASANG
-    const colJumlah = findCol(cols, config.jumlahCol);
-    const colStatus = findCol(cols, config.statusCol);
+  // ── 2018 ──────────────────────────────────────────────────
+  // Kolom O (idx 14) = JML MTU → SUM
+  // Kolom P (idx 15) = STATUS PASANG → SUDAH / BELUM
+  if (config.mode === '2018') {
+    const jmlCol = cols[config.jumlahColIdx];
+    const statusCol = cols[config.statusColIdx];
     let total = 0, terpasang = 0, belum = 0;
     rows.forEach(r => {
-      const n = colJumlah ? toNum(r[colJumlah]) : 1;
+      const n = toNum(r[jmlCol]);
       total += n;
-      if (colStatus) {
-        if (isTerpasang(r[colStatus])) terpasang += n;
-        else if (isBelum(r[colStatus])) belum += n;
-      }
+      if (isTerpasang(r[statusCol])) terpasang += n;
+      else belum += n;
     });
-    return { total, terpasang, belum };
+    return { total, terpasang, belum, bursa: 0 };
   }
 
-  // 'row' — 2018: tiap baris = 1 unit
-  const colStatus = findCol(cols, config.statusCol);
-  let total = rows.length, terpasang = 0, belum = 0;
-  if (colStatus) {
+  // ── 2021 ──────────────────────────────────────────────────
+  // Kolom I (idx 8) = JML MTU → SUM
+  // Kolom Q (idx 16) = STATUS PASANG → SUDAH / BELUM
+  if (config.mode === '2021') {
+    const jmlCol = cols[config.jumlahColIdx];
+    const statusCol = cols[config.statusColIdx];
+    let total = 0, terpasang = 0, belum = 0;
     rows.forEach(r => {
-      if (isTerpasang(r[colStatus])) terpasang++;
-      else if (isBelum(r[colStatus])) belum++;
+      const n = toNum(r[jmlCol]);
+      total += n;
+      if (isTerpasang(r[statusCol])) terpasang += n;
+      else belum += n;
+    });
+    return { total, terpasang, belum, bursa: 0 };
+  }
+
+  // ── 2023 ──────────────────────────────────────────────────
+  // Kolom D (idx 3) = STATUS MTU → filter hanya "SCM"
+  // Kolom K (idx 10) = JML MTU → SUM
+  // Kolom T (idx 19) = STATUS PASANG → SUDAH / BELUM / BURSA
+  // Baris non-SCM dihitung tersendiri sebagai "bursa"
+  if (config.mode === '2023') {
+    const filterCol = cols[config.filterColIdx];
+    const jmlCol = cols[config.jumlahColIdx];
+    const statusCol = cols[config.statusColIdx];
+
+    let total = 0, terpasang = 0, belum = 0, bursa = 0;
+    rows.forEach(r => {
+      const isScm = String(r[filterCol] || '').trim().toUpperCase() === 'SCM';
+      const n = toNum(r[jmlCol]);
+      if (!isScm) {
+        bursa += n; // baris non-SCM dihitung sebagai bursa
+        return;
+      }
+      total += n;
+      const st = String(r[statusCol] || '').trim().toLowerCase();
+      if (st === 'sudah') terpasang += n;
+      else if (st === 'bursa') bursa += n;
+      else belum += n;
+    });
+    return { total, terpasang, belum, bursa };
+  }
+
+  // ── 2024 ──────────────────────────────────────────────────
+  // SUM kolom Jumlah/Terpasang/Belum (auto-detect nama)
+  // Exclude material SF6
+  let data = rows;
+  const matCol = cols[config.excludeMaterialIdx];
+  if (matCol && config.excludeMaterial) {
+    data = data.filter(r => {
+      const m = String(r[matCol] || '').toUpperCase();
+      return !config.excludeMaterial.some(ex => m.includes(ex));
     });
   }
-  return { total, terpasang, belum };
+  const colJumlah = findCol(cols, config.jumlahCol);
+  const colTerpasang = findCol(cols, config.terpasangCol);
+  const colBelum = findCol(cols, config.belumCol);
+  const sum = col => col ? data.reduce((s, r) => s + toNum(r[col]), 0) : 0;
+  return {
+    total: sum(colJumlah),
+    terpasang: sum(colTerpasang),
+    belum: sum(colBelum),
+    bursa: 0
+  };
 }
 
 /* ============================================================
@@ -183,10 +221,27 @@ function renderYearCards() {
 
     let body;
     if (!stat) {
-      body = `<div class="year-card-loading">Memuat data...</div>`;
+      // Placeholder dengan tinggi sama (3 baris stat + 1 baris bursa placeholder)
+      body = `
+        <div class="year-card-stats">
+          <div class="year-card-stat"><span class="stat-label">Total MTU</span><span class="year-card-loading">Memuat...</span></div>
+          <div class="year-card-stat success"><span class="stat-label">Sudah Terpasang</span><span class="year-card-loading">—</span></div>
+          <div class="year-card-stat warning"><span class="stat-label">Belum Terpasang</span><span class="year-card-loading">—</span></div>
+          <div class="year-card-stat bursa"><span class="stat-label">Bursa</span><span class="year-card-loading">—</span></div>
+        </div>`;
     } else if (stat.error) {
-      body = `<div class="year-card-loading">⚠️ ${stat.error}</div>`;
+      body = `
+        <div class="year-card-stats">
+          <div class="year-card-stat"><span class="stat-label" colspan="2">⚠️ ${stat.error}</span></div>
+          <div class="year-card-stat success"><span class="stat-label">Sudah Terpasang</span><span class="stat-value">—</span></div>
+          <div class="year-card-stat warning"><span class="stat-label">Belum Terpasang</span><span class="stat-value">—</span></div>
+          <div class="year-card-stat bursa"><span class="stat-label">Bursa</span><span class="stat-value">—</span></div>
+        </div>`;
     } else {
+      // Semua card selalu tampilkan 4 baris stat agar tinggi konsisten
+      // Untuk card yang tidak punya bursa (2018, 2021, 2024), baris bursa tetap
+      // ditampilkan dengan nilai 0 agar layout seragam
+      const hasBursa = stat.bursa > 0;
       body = `
         <div class="year-card-stats">
           <div class="year-card-stat">
@@ -200,6 +255,10 @@ function renderYearCards() {
           <div class="year-card-stat warning">
             <span class="stat-label">Belum Terpasang</span>
             <span class="stat-value">${stat.belum.toLocaleString('id-ID')}</span>
+          </div>
+          <div class="year-card-stat bursa">
+            <span class="stat-label">Bursa</span>
+            <span class="stat-value">${hasBursa ? stat.bursa.toLocaleString('id-ID') : '—'}</span>
           </div>
         </div>`;
     }
@@ -220,6 +279,7 @@ function renderGrandTotals() {
   const total = all.reduce((s, x) => s + x.total, 0);
   const terpasang = all.reduce((s, x) => s + x.terpasang, 0);
   const belum = all.reduce((s, x) => s + x.belum, 0);
+  // Bursa tidak masuk ke grand total belum terpasang (ditampilkan terpisah di card tahun)
 
   const totalEl = document.getElementById('grandTotal');
   const terpasangEl = document.getElementById('grandTerpasang');
