@@ -850,3 +850,7 @@
   color: var(--text-muted);
   font-style: italic;
 }
+
+/* Baris bursa di year card */
+.year-card-stat.bursa .stat-value { color: var(--text-muted); }
+.year-card-stat.bursa .stat-label { color: var(--text-muted); }
