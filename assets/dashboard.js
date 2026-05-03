@@ -1143,4 +1143,40 @@ function applyTheme(theme) {
   themeToggle.textContent = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
 }
 
+/* ============================================================
+   SIDEBAR — hamburger toggle, klik di luar / Esc untuk tutup
+============================================================ */
+function setupSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const backdrop = document.getElementById('sidebarBackdrop');
+  const openBtn = document.getElementById('hamburgerBtn');
+  const closeBtn = document.getElementById('sidebarCloseBtn');
+  if (!sidebar || !backdrop || !openBtn) return;
+
+  function open() {
+    sidebar.classList.add('open');
+    backdrop.classList.add('visible');
+    sidebar.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+  }
+  function close() {
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('visible');
+    sidebar.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+  }
+
+  openBtn.addEventListener('click', open);
+  if (closeBtn) closeBtn.addEventListener('click', close);
+  backdrop.addEventListener('click', close);
+  // Klik link di sidebar → tutup (sebelum navigasi)
+  sidebar.querySelectorAll('.sidebar-link').forEach(a => {
+    a.addEventListener('click', () => setTimeout(close, 50));
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && sidebar.classList.contains('open')) close();
+  });
+}
+
+setupSidebar();
 loadData();
