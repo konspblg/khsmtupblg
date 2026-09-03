@@ -57,6 +57,16 @@ const YEAR_CONFIG = [
     belumCol: ['belum terpasang', 'sisa'],
     excludeMaterialIdx: 7,
     excludeMaterial: ['SF6'],
+  },
+  {
+    year: 2026,
+    gid: '416928234',
+    page: '2026.html',
+    jumlahCol: ['jumlah mtu', 'jumlah'],
+    terpasangCol: ['sudah terpasang', 'terpasang'],
+    belumCol: ['belum terpasang', 'sisa'],
+    excludeMaterialIdx: 7,
+    excludeMaterial: ['SF6'],
     mode: '2024'
   }
 ];
