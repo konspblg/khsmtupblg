@@ -1,5 +1,5 @@
-const SHEET_ID = '1n2rFEUf5O02qZuUqEK9WqID5nC9CGObcokTN2qZ8Sps';
-const GID = '1351233736';
+const SHEET_ID = window.OVERRIDE_SHEET_ID || '1n2rFEUf5O02qZuUqEK9WqID5nC9CGObcokTN2qZ8Sps';
+const GID = window.OVERRIDE_GID || '1351233736';
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}`;
 const ROWS_PER_PAGE = 25;
 
