@@ -176,7 +176,7 @@
     padding: 2px;
     gap: 2px;
   }
-  .pie-mode-btn, .bar-mode-btn {
+  .pie-mode-btn, .bar-mode-btn, .plan-mode-btn {
     background: transparent;
     border: none;
     padding: 0.35rem 0.7rem;
@@ -188,8 +188,8 @@
     transition: all 0.18s;
     white-space: nowrap;
   }
-  .pie-mode-btn:hover, .bar-mode-btn:hover { color: var(--text); }
-  .pie-mode-btn.active, .bar-mode-btn.active {
+  .pie-mode-btn:hover, .bar-mode-btn:hover, .plan-mode-btn:hover { color: var(--text); }
+  .pie-mode-btn.active, .bar-mode-btn.active, .plan-mode-btn.active {
     background: var(--surface);
     color: var(--primary);
     font-weight: 600;
@@ -854,3 +854,29 @@
 /* Baris bursa di year card */
 .year-card-stat.bursa .stat-value { color: var(--text-muted); }
 .year-card-stat.bursa .stat-label { color: var(--text-muted); }
+
+
+/* ============================================================
+   CARD RENCANA vs REALISASI PASANG
+============================================================ */
+.plan-card { margin-bottom: 1.25rem; }
+.plan-controls { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+.plan-year-select {
+  flex: 0 0 auto;
+  width: auto;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.plan-legend {
+  display: flex; gap: 1.25rem; flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.plan-legend .item { display: flex; align-items: center; gap: 6px; }
+.plan-legend .swatch { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.plan-legend .item strong { color: var(--text); font-weight: 700; }
+.plan-card .chart-wrapper { height: 260px; }
+.plan-note { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; }
+.plan-note:empty { display: none; }
