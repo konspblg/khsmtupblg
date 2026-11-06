@@ -124,6 +124,7 @@ function buildDisplayColumns() {
 
 function initDashboard() {
   populateAllFilters();
+  setupPlanChart();
   renderStats();
   renderCharts();
   renderTable();
@@ -362,6 +363,7 @@ function renderCharts() {
   // Render filter di atas chart
   renderBarFilter();
   renderPieFilter();
+  renderPlanChart();
 }
 
 /* ============================================================
@@ -1141,6 +1143,183 @@ themeToggle.addEventListener('click', () => {
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   themeToggle.textContent = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
+}
+
+/* ============================================================
+   CHART RENCANA vs REALISASI PASANG (per bulan-tahun)
+   - Sumbu X     : Jan..Des pada tahun yang dipilih di dropdown
+   - Rencana     : SUM kolom Jumlah, dikelompokkan per bulan Rencana Pasang
+   - Realisasi   : SUM kolom Jumlah Terpasang, per bulan Realisasi Pasang
+   - Mode        : Per bulan / Kumulatif (akumulasi Jan..Des tahun terpilih)
+   - Ikut semua filter aktif (filteredData)
+============================================================ */
+let planChart = null;
+let planYear = null;
+let planMode = 'bulan';
+let colRencana = null, colRealisasi = null;
+let planBound = false;
+const PLAN_MONTHS = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+
+// Parser tanggal untuk chart ini: format biasa + "Oktober 2024" (tanpa hari → tanggal 1)
+function planParseDate(raw) {
+  const s = String(raw || '').trim();
+  if (!s) return null;
+  // "Oktober 2024" harus dicek lebih dulu (Date.parse bawaan salah baca jadi Januari)
+  const m = s.match(/^([A-Za-z]+)\.?\s+(\d{4})$/);
+  if (m) {
+    const key = m[1].toLowerCase();
+    if (ID_MONTHS.hasOwnProperty(key)) return new Date(parseInt(m[2], 10), ID_MONTHS[key], 1).getTime();
+    return null;
+  }
+  return parseIndoDate(s);
+}
+
+function planNum(v) {
+  const n = parseFloat(String(v || '').replace(/[^\d.-]/g, ''));
+  return isNaN(n) ? 0 : n;
+}
+
+// Kelompokkan nilai (valCol) per bulan-tahun berdasarkan tanggal di dateCol
+function planBucket(data, dateCol, valCol) {
+  const buckets = {};
+  let skipped = 0;
+  if (!dateCol) return { buckets, skipped };
+  data.forEach(r => {
+    const raw = r[dateCol];
+    if (raw === '' || raw === null || raw === undefined) return;
+    const t = planParseDate(raw);
+    if (t === null) { skipped++; return; }
+    const d = new Date(t);
+    const key = d.getFullYear() + '-' + d.getMonth();
+    buckets[key] = (buckets[key] || 0) + (valCol ? planNum(r[valCol]) : 1);
+  });
+  return { buckets, skipped };
+}
+
+function setupPlanChart() {
+  const card = document.getElementById('planCard');
+  if (!card) return;
+  colRencana = findColumn(['rencana pasang']);
+  colRealisasi = findColumn(['realisasi pasang']);
+  if (!colRencana && !colRealisasi) { card.classList.add('hidden'); return; }
+  card.classList.remove('hidden');
+
+  // Daftar tahun: 2025-2028 + tahun lain yang ada di data
+  const counts = {};
+  [colRencana, colRealisasi].forEach(c => {
+    if (!c) return;
+    allData.forEach(r => {
+      const t = planParseDate(r[c]);
+      if (t === null) return;
+      const y = new Date(t).getFullYear();
+      if (y >= 2018 && y <= 2040) counts[y] = (counts[y] || 0) + 1;
+    });
+  });
+  const years = new Set([2025, 2026, 2027, 2028]);
+  Object.keys(counts).forEach(y => years.add(Number(y)));
+  const list = [...years].sort((a, b) => a - b);
+
+  const sel = document.getElementById('planYearSelect');
+  sel.innerHTML = '';
+  list.forEach(y => {
+    const o = document.createElement('option');
+    o.value = y; o.textContent = y;
+    sel.appendChild(o);
+  });
+
+  // Tahun awal: yang datanya paling banyak (kalau belum pernah dipilih)
+  if (planYear === null || !list.includes(planYear)) {
+    let best = null;
+    list.forEach(y => { if (counts[y] && (best === null || counts[y] > counts[best])) best = y; });
+    const now = new Date().getFullYear();
+    planYear = best !== null ? best : (list.includes(now) ? now : list[0]);
+  }
+  sel.value = String(planYear);
+
+  if (!planBound) {
+    planBound = true;
+    sel.addEventListener('change', () => {
+      planYear = Number(sel.value);
+      renderPlanChart();
+    });
+    document.querySelectorAll('.plan-mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        planMode = btn.dataset.mode;
+        document.querySelectorAll('.plan-mode-btn').forEach(b =>
+          b.classList.toggle('active', b.dataset.mode === planMode));
+        renderPlanChart();
+      });
+    });
+  }
+}
+
+function renderPlanChart() {
+  const canvas = document.getElementById('planChart');
+  if (!canvas || (!colRencana && !colRealisasi) || planYear === null) return;
+
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const textColor = isDark ? '#f1f5f9' : '#1a1f36';
+  const mutedColor = isDark ? '#94a3b8' : '#6b7280';
+  const gridColor = isDark ? '#334155' : '#e5e7eb';
+
+  const rn = planBucket(filteredData, colRencana, colJumlah);
+  const rl = planBucket(filteredData, colRealisasi, colTerpasang || colJumlah);
+  const round = v => Math.round(v * 100) / 100;
+
+  let rencana = PLAN_MONTHS.map((_, m) => round(rn.buckets[planYear + '-' + m] || 0));
+  let realisasi = PLAN_MONTHS.map((_, m) => round(rl.buckets[planYear + '-' + m] || 0));
+
+  // Total setahun (selalu non-kumulatif) untuk legend
+  const totalRencana = round(rencana.reduce((a, b) => a + b, 0));
+  const totalRealisasi = round(realisasi.reduce((a, b) => a + b, 0));
+  document.getElementById('planTotalRencana').textContent = totalRencana.toLocaleString('id-ID');
+  document.getElementById('planTotalRealisasi').textContent = totalRealisasi.toLocaleString('id-ID');
+
+  if (planMode === 'kum') {
+    const cum = arr => { let s = 0; return arr.map(v => round(s += v)); };
+    rencana = cum(rencana);
+    realisasi = cum(realisasi);
+  }
+
+  const skipped = rn.skipped + rl.skipped;
+  document.getElementById('planNote').textContent = skipped > 0
+    ? `${skipped} data bertanggal tidak terbaca dan tidak dihitung di chart ini.`
+    : '';
+
+  const yy = String(planYear).slice(2);
+  const labels = PLAN_MONTHS.map(m => `${m} ${yy}`);
+
+  if (planChart) planChart.destroy();
+  planChart = new Chart(canvas.getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Rencana pasang', data: rencana, backgroundColor: '#2a78d6', borderRadius: 4, maxBarThickness: 18 },
+        { label: 'Realisasi pasang', data: realisasi, backgroundColor: '#1baf7a', borderRadius: 4, maxBarThickness: 18 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      layout: { padding: { top: 20 } },
+      plugins: {
+        legend: { display: false },
+        datalabels: {
+          display: true,
+          anchor: 'end',
+          align: 'top',
+          color: textColor,
+          font: { size: 10, weight: '600' },
+          formatter: v => Number(v || 0).toLocaleString('id-ID')
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: mutedColor, autoSkip: false, maxRotation: 45, minRotation: 0, font: { size: 10 } } },
+        y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: mutedColor, precision: 0 } }
+      }
+    },
+    plugins: [ChartDataLabels]
+  });
 }
 
 /* ============================================================
