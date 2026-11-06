@@ -133,6 +133,25 @@
       </div>
     </div>
 
+    <div class="chart-card plan-card" id="planCard">
+      <div class="chart-card-header">
+        <h3>📅 Rencana vs Realisasi Pasang</h3>
+        <div class="plan-controls">
+          <select class="chart-filter-select plan-year-select" id="planYearSelect" aria-label="Pilih tahun"></select>
+          <div class="pie-mode-toggle">
+            <button type="button" class="plan-mode-btn active" data-mode="bulan">Per bulan</button>
+            <button type="button" class="plan-mode-btn" data-mode="kum">Kumulatif</button>
+          </div>
+        </div>
+      </div>
+      <div class="plan-legend">
+        <span class="item"><span class="swatch" style="background:#2a78d6;"></span>Rencana pasang <strong id="planTotalRencana">0</strong></span>
+        <span class="item"><span class="swatch" style="background:#1baf7a;"></span>Realisasi pasang <strong id="planTotalRealisasi">0</strong></span>
+      </div>
+      <div class="chart-wrapper"><canvas id="planChart" role="img" aria-label="Grafik rencana pasang dan realisasi pasang per bulan pada tahun terpilih"></canvas></div>
+      <div class="plan-note" id="planNote"></div>
+    </div>
+
     <div class="table-card">
       <div class="table-header">
         <h3>📋 Data Detail</h3>
