@@ -1159,6 +1159,8 @@ let planMode = 'bulan';
 let colRencana = null, colRealisasi = null;
 let planBound = false;
 const PLAN_MONTHS = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+// Awal perencanaan pasang: kumulatif dihitung sejak Januari tahun ini dan tidak reset tiap tahun
+const PLAN_START_YEAR = 2025;
 
 // Parser tanggal untuk chart ini: format biasa + "Oktober 2024" (tanpa hari → tanggal 1)
 function planParseDate(raw) {
@@ -1216,7 +1218,7 @@ function setupPlanChart() {
     });
   });
   const years = new Set([2025, 2026, 2027, 2028]);
-  Object.keys(counts).forEach(y => years.add(Number(y)));
+  Object.keys(counts).forEach(y => { if (Number(y) >= PLAN_START_YEAR) years.add(Number(y)); });
   const list = [...years].sort((a, b) => a - b);
 
   const sel = document.getElementById('planYearSelect');
@@ -1229,10 +1231,9 @@ function setupPlanChart() {
 
   // Tahun awal: yang datanya paling banyak (kalau belum pernah dipilih)
   if (planYear === null || !list.includes(planYear)) {
-    let best = null;
-    list.forEach(y => { if (counts[y] && (best === null || counts[y] > counts[best])) best = y; });
+    // Default: tahun berjalan (kalau di luar daftar, pakai tahun terdekat)
     const now = new Date().getFullYear();
-    planYear = best !== null ? best : (list.includes(now) ? now : list[0]);
+    planYear = list.includes(now) ? now : (list.find(y => y > now) || list[list.length - 1]);
   }
   sel.value = String(planYear);
 
@@ -1253,6 +1254,15 @@ function setupPlanChart() {
   }
 }
 
+// Kumulatif sejak PLAN_START_YEAR sampai tiap bulan di tahun terpilih
+function planCumulative(buckets, round) {
+  let s = 0;
+  for (let y = PLAN_START_YEAR; y < planYear; y++) {
+    for (let m = 0; m < 12; m++) s += buckets[y + '-' + m] || 0;
+  }
+  return PLAN_MONTHS.map((_, m) => round(s += buckets[planYear + '-' + m] || 0));
+}
+
 function renderPlanChart() {
   const canvas = document.getElementById('planChart');
   if (!canvas || (!colRencana && !colRealisasi) || planYear === null) return;
@@ -1269,17 +1279,17 @@ function renderPlanChart() {
   let rencana = PLAN_MONTHS.map((_, m) => round(rn.buckets[planYear + '-' + m] || 0));
   let realisasi = PLAN_MONTHS.map((_, m) => round(rl.buckets[planYear + '-' + m] || 0));
 
-  // Total setahun (selalu non-kumulatif) untuk legend
-  const totalRencana = round(rencana.reduce((a, b) => a + b, 0));
-  const totalRealisasi = round(realisasi.reduce((a, b) => a + b, 0));
+  // Kumulatif: dihitung sejak awal perencanaan (PLAN_START_YEAR), tidak reset tiap tahun
+  if (planMode === 'kum') {
+    rencana = planCumulative(rn.buckets, round);
+    realisasi = planCumulative(rl.buckets, round);
+  }
+
+  // Legend: per bulan = total tahun terpilih; kumulatif = posisi akhir Desember
+  const totalRencana = planMode === 'kum' ? rencana[11] : round(rencana.reduce((a, b) => a + b, 0));
+  const totalRealisasi = planMode === 'kum' ? realisasi[11] : round(realisasi.reduce((a, b) => a + b, 0));
   document.getElementById('planTotalRencana').textContent = totalRencana.toLocaleString('id-ID');
   document.getElementById('planTotalRealisasi').textContent = totalRealisasi.toLocaleString('id-ID');
-
-  if (planMode === 'kum') {
-    const cum = arr => { let s = 0; return arr.map(v => round(s += v)); };
-    rencana = cum(rencana);
-    realisasi = cum(realisasi);
-  }
 
   const skipped = rn.skipped + rl.skipped;
   document.getElementById('planNote').textContent = skipped > 0
